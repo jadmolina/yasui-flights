@@ -1,14 +1,14 @@
 {
- "ultima_corrida": "2026-11-06T12:17:05+00:00",
- "segundos": 126,
- "tarifas": 3005,
- "ofertas": 12,
+ "ultima_corrida": "2026-11-06T19:34:08+00:00",
+ "segundos": 130,
+ "tarifas": 3054,
+ "ofertas": 13,
  "personas": 0,
  "fuentes": [
   {
    "nombre": "Aviasales",
    "ok": true,
-   "n": 2982,
+   "n": 3032,
    "detalle": ""
   },
   {
@@ -44,8 +44,8 @@
   {
    "nombre": "Google Flights",
    "ok": true,
-   "n": 24,
-   "detalle": "BQN 2026-12-08: TypeError: 'NoneType' object is not subscriptable"
+   "n": 25,
+   "detalle": "25 búsquedas"
   }
  ]
 }
