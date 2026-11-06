@@ -59,8 +59,12 @@ class Combinador:
             llegar = directo.get(t.origen)  # SJU -> ciudad puente (aprox.)
             if llegar is None:
                 continue
-            ref = directo.get(t.destino) or self.det.mediana(f"{t.destino}:rt")
             meta = self._meta(t)
+            # "Lo normal" desde SJU: el menor entre lo de hoy, la mediana y un típico (meta x 1.8).
+            # Así un precio raro de $2,000 en Aviasales no hace parecer un combinado más barato de lo que es.
+            opciones = [x for x in (directo.get(t.destino), self.det.mediana(f"{t.destino}:rt"),
+                                    meta * float(self.det.reglas.get("factor_tipico", 1.8))) if x]
+            ref = min(opciones) if opciones else None
             total_aprox = t.precio + llegar
             prometedor = t.es_error or total_aprox <= meta * 1.15 or (ref and total_aprox <= ref * (1 - ahorro_min) * 1.1)
             if prometedor:
@@ -129,15 +133,15 @@ class Combinador:
             motivos.append(f"Total menos del {int(f_err * 100)}% de tu precio meta (${meta:,.0f})")
         if ahorro is not None and ahorro >= 0.5:
             nivel = 3
-            motivos.append(f"{ahorro:.0%} más barato que ir directo desde SJU (~${ref:,.0f})")
+            motivos.append(f"{ahorro:.0%} más barato que lo normal desde SJU (~${ref:,.0f})")
         if nivel < 3:
             if total <= meta:
                 nivel = 2
                 motivos.append(f"Total debajo de tu precio meta (${meta:,.0f})")
             if ahorro is not None and ahorro >= ahorro_min:
                 nivel = 2
-                motivos.append(f"{ahorro:.0%} más barato que ir directo desde SJU (~${ref:,.0f})")
-        texto_ahorro = f"{ahorro:.0%} más barato que ir directo desde SJU (~${ref:,.0f})" if ahorro is not None else ""
+                motivos.append(f"{ahorro:.0%} más barato que lo normal desde SJU (~${ref:,.0f})")
+        texto_ahorro = f"{ahorro:.0%} más barato que lo normal desde SJU (~${ref:,.0f})" if ahorro is not None else ""
         if nivel and ahorro is not None and ahorro >= ahorro_min and texto_ahorro not in motivos:
             motivos.append(texto_ahorro)
         if nivel == 0:

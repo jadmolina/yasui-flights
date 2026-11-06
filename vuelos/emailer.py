@@ -133,7 +133,7 @@ def _fila_combinado(o: dict) -> str:
     aprox = "" if p.get("exacto") else " aprox."
     ahorro = ""
     if o.get("directo"):
-        ahorro = f"Directo desde SJU ~{_dinero(o['directo'])}"
+        ahorro = f"Normal desde SJU ~{_dinero(o['directo'])}"
         if o.get("descuento") and o["descuento"] > 0:
             ahorro += f" · <b style='color:#1d8a4e'>{o['descuento']:.0%} menos</b>"
     paso = "font-size:13px;color:%s;margin-top:4px;padding:8px 10px;background:#f6f4ef;border-radius:8px" % TINTA

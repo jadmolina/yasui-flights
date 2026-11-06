@@ -237,7 +237,9 @@ def main() -> int:
     if gf is not None:
         revisadas = gf.verificar(ofertas)
         if revisadas:
-            log(f"  Google Flights verificó {revisadas} ofertas")
+            antes = len(ofertas)
+            ofertas = det.quitar_no_confirmadas(ofertas)
+            log(f"  Google Flights verificó {revisadas} ofertas; {antes - len(ofertas)} ya no estaban a ese precio")
         fuentes.append({"nombre": "Google Flights", "ok": not gf.bloqueado, "n": gf.busquedas,
                         "detalle": "; ".join(gf.errores[-2:]) or f"{gf.busquedas} búsquedas"})
     precios = det.precios_mapa(tarifas)

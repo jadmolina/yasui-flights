@@ -19,6 +19,7 @@ from .sources.google_flights import link_google
 from .util import DATA, ahora_iso, guardar_json, horas_desde, hoy_pr, leer_json
 
 NIVELES = {3: "Posible error de tarifa", 2: "Ganga", 1: "Oferta"}
+VERSION_REGLAS = 2  # si cambian las reglas, las ofertas viejas se descartan en vez de arrastrarse
 
 ARCH_HISTORIAL = DATA / "historial.json"
 ARCH_OFERTAS = DATA / "ofertas.json"
@@ -220,7 +221,7 @@ class Detector:
             resultado[o["id"]] = o
         dias_feed = float(self.config.get("feeds", {}).get("dias_a_mostrar", 10))
         for oid, p in previas.items():
-            if oid in resultado:
+            if oid in resultado or p.get("v") != VERSION_REGLAS:
                 continue
             if p["fuente"] == "feed":
                 vigente = horas_desde(p.get("encontrado") or p.get("primera_vez")) < dias_feed * 24
@@ -231,8 +232,16 @@ class Detector:
             if vigente:
                 resultado[oid] = p
         lista = list(resultado.values())
+        for o in lista:
+            o["v"] = VERSION_REGLAS
         lista.sort(key=lambda o: (-o["nivel"], -(o.get("descuento") or 0), o["precio"]))
         return lista
+
+    @staticmethod
+    def quitar_no_confirmadas(ofertas: List[dict]) -> List[dict]:
+        """Si Google Flights tiene esas mismas fechas bastante más caras, el precio de Aviasales
+        era viejo: no la enseñamos."""
+        return [o for o in ofertas if o.get("verificado") is not False]
 
     # ============================================================ emails
     def clave_aviso(self, o: dict) -> str:

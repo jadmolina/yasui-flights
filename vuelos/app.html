@@ -542,7 +542,7 @@ function tarjeta(o){
   const motivos = o.motivos && o.motivos.length ? `<p class="motivos">${esc(o.motivos.join(" · "))}</p>` : "";
   if (o.tipo === "combinado") {
     const p = o.puente, t = o.tramo;
-    const comp = o.directo ? `Directo desde SJU ~${dinero(o.directo)}${o.descuento > 0 ? ` &middot; <strong>${Math.round(o.descuento * 100)}% menos</strong>` : ""}` : `Precio meta: ${dinero(o.meta)}`;
+    const comp = o.directo ? `Normal desde SJU ~${dinero(o.directo)}${o.descuento > 0 ? ` &middot; <strong>${Math.round(o.descuento * 100)}% menos</strong>` : ""}` : `Precio meta: ${dinero(o.meta)}`;
     const fp = p.salida ? `${fmtFecha(p.salida)}${p.regreso ? " → " + fmtFecha(p.regreso) : ""}` : "según tus fechas";
     const ft = t.salida ? `${fmtFecha(t.salida)}${t.regreso ? " → " + fmtFecha(t.regreso) : ""}` : "fechas en el post";
     return `<article class="card n${o.nivel}">

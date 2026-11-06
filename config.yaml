@@ -62,6 +62,7 @@ metas_por_region:
 reglas:
   factor_error: 0.6          # Precio <= 60% de la meta  -> "Posible error de tarifa"
   millas_minimas_error: 2000 # ...pero solo en vuelos largos (los cortos de Spirit/Frontier bajan así seguido)
+  factor_tipico: 1.8         # Si no hay historial, "lo normal" se estima como meta x 1.8 (para los combinados)
   descuento_ganga: 0.35      # 35% o más bajo lo normal  -> "Ganga"
   descuento_error: 0.50      # 50% o más bajo lo normal  -> "Posible error de tarifa"
   centavos_por_milla: 3.5    # Regla para "a donde sea" (solo destinos a 1,500+ millas)
@@ -102,7 +103,7 @@ combinados:
 google_flights:
   activo: true
   busquedas_por_corrida: 10  # Fechas al azar en tus favoritos, cada vez que corre
-  verificar_ofertas: 8       # Cuántas ofertas confirma en Google Flights por corrida
+  verificar_ofertas: 15      # Cuántas ofertas confirma en Google Flights por corrida
   dias_de_viaje: [5, 7, 10]  # Duración de los viajes que prueba
   dias_minimos: 14           # No busca vuelos que salgan antes de esto
   dias_maximos: 270
