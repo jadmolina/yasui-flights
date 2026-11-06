@@ -1,8 +1,8 @@
 {
- "ultima_corrida": "2026-11-06T02:21:41+00:00",
- "segundos": 43,
- "tarifas": 2993,
- "ofertas": 27,
+ "ultima_corrida": "2026-11-06T02:39:46+00:00",
+ "segundos": 103,
+ "tarifas": 3002,
+ "ofertas": 33,
  "personas": 0,
  "fuentes": [
   {
@@ -13,15 +13,15 @@
   },
   {
    "nombre": "Secret Flying (San Juan)",
-   "ok": true,
-   "n": 0,
-   "detalle": "0 posts revisados"
+   "ok": false,
+   "n": null,
+   "detalle": "el sitio no devolvió posts (puede estar bloqueando)"
   },
   {
    "nombre": "Secret Flying",
-   "ok": true,
-   "n": 0,
-   "detalle": "0 posts revisados"
+   "ok": false,
+   "n": null,
+   "detalle": "el sitio no devolvió posts (puede estar bloqueando)"
   },
   {
    "nombre": "The Flight Deal",
@@ -43,9 +43,9 @@
   },
   {
    "nombre": "Google Flights",
-   "ok": false,
-   "activo": false,
-   "detalle": "fast-flights no instalado (necesita Python 3.10+)"
+   "ok": true,
+   "n": 18,
+   "detalle": "YUL 2027-06-03: TypeError: 'NoneType' object is not subscriptable"
   }
  ]
 }
