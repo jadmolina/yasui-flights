@@ -58,6 +58,17 @@ def env(nombre: str, defecto: str = "") -> str:
     return os.environ.get(nombre, defecto).strip()
 
 
+def supabase_url() -> str:
+    """El Project URL limpio, aunque lo hayan pegado con /rest/v1/ o con / al final."""
+    url = env("SUPABASE_URL").rstrip("/")
+    for sufijo in ("/rest/v1", "/auth/v1"):
+        if url.endswith(sufijo):
+            url = url[: -len(sufijo)]
+    if url and not url.startswith("http"):
+        url = "https://" + url
+    return url.rstrip("/")
+
+
 # ---------------------------------------------------------------- HTTP
 
 def sesion_http() -> requests.Session:

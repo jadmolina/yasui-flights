@@ -9,7 +9,7 @@ from typing import Dict, List
 
 import requests
 
-from .util import DATA, aviso, env, guardar_json, leer_json
+from .util import DATA, aviso, env, guardar_json, leer_json, supabase_url
 
 UA = "yasui-flights-bot/1.0 (+python-requests)"  # Supabase rechaza la secret key si parece un navegador
 
@@ -90,7 +90,7 @@ class Local:
 
 
 def conectar():
-    url, secreta = env("SUPABASE_URL"), env("SUPABASE_SECRET_KEY")
+    url, secreta = supabase_url(), env("SUPABASE_SECRET_KEY")
     if url and secreta:
         return Supabase(url, secreta)
     return Local(env("EMAIL_TO"), env("GMAIL_USER"))

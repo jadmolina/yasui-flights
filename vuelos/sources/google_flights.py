@@ -22,8 +22,10 @@ try:  # fast-flights 3.x necesita Python 3.10+
     from fast_flights import FlightQuery, Passengers, create_query, get_flights
 
     DISPONIBLE = True
-except Exception:  # noqa: BLE001
+    ERROR_IMPORT = ""
+except Exception as _e:  # noqa: BLE001
     DISPONIBLE = False
+    ERROR_IMPORT = f"{type(_e).__name__}: {_e}"
 
 
 def link_google(origen: str, destino: str, salida: Optional[str] = None, regreso: Optional[str] = None) -> str:
@@ -94,7 +96,7 @@ class GoogleFlights:
     def escanear(self, extra: Optional[List[str]] = None) -> List[Tarifa]:
         """Prueba fechas al azar en los destinos base y en los que escogió la gente (extra)."""
         if not DISPONIBLE:
-            aviso("fast-flights no está instalado (necesita Python 3.10+). Me salto Google Flights.")
+            aviso(f"Google Flights no disponible ({ERROR_IMPORT}). Me lo salto.")
             return []
         favoritos = [f for f in self.config.get("favoritos", []) if f.get("aeropuerto")]
         ya = {f["ciudad"] for f in favoritos}

@@ -135,7 +135,8 @@ class Detector:
         if t.es_error:
             nivel = 3
             motivos.append(f"{t.sitio} lo reporta como error de tarifa")
-        if t.precio <= meta * f_err:
+        largo = (t.distancia or 0) >= float(self.reglas.get("millas_minimas_error", 2000))
+        if t.precio <= meta * f_err and largo:
             nivel = 3
             motivos.append(f"Menos del {int(f_err * 100)}% de tu precio meta (${meta:,.0f})")
         if descuento is not None and descuento >= d_err:
@@ -195,7 +196,13 @@ class Detector:
                 k = f"{o['destino']}:{o['ida_y_vuelta']}:{(o.get('salida') or '')[:7]}"
             if k not in mejores or o["precio"] < mejores[k]["precio"]:
                 mejores[k] = o
-        return list(mejores.values())
+        # ...y máximo 2 fechas por destino (las mejores)
+        por_destino: Dict[str, List[dict]] = {}
+        for o in sorted(mejores.values(), key=lambda o: (-o["nivel"], -(o.get("descuento") or 0), o["precio"])):
+            k = o["id"] if o["fuente"] == "feed" else f"{o['destino']}:{o['ida_y_vuelta']}"
+            if len(por_destino.setdefault(k, [])) < 2:
+                por_destino[k].append(o)
+        return [o for lista in por_destino.values() for o in lista]
 
     # ============================================================ combinar con lo anterior
     def combinar(self, nuevas: List[dict]) -> List[dict]:

@@ -54,6 +54,8 @@ class Combinador:
                 continue
             if t.destino in (t.origen, self.origen) or t.pais == "PR" or not quiere(t):
                 continue
+            if t.destino in self.nombres_puente or t.region in ("usa", "caribe"):
+                continue  # para ir a Chicago o a Punta Cana no hace falta un combinado
             llegar = directo.get(t.origen)  # SJU -> ciudad puente (aprox.)
             if llegar is None:
                 continue

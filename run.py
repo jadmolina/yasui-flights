@@ -211,13 +211,14 @@ def main() -> int:
     # ---------------- Google Flights (escaneo)
     gf = None
     if usar("google") and config.get("google_flights", {}).get("activo", True):
-        from vuelos.sources.google_flights import DISPONIBLE, GoogleFlights
+        from vuelos.sources.google_flights import DISPONIBLE, ERROR_IMPORT, GoogleFlights
         if DISPONIBLE:
             gf = GoogleFlights(config)
             tarifas += gf.escanear(ciudades)
         else:
+            aviso(f"Google Flights no disponible: {ERROR_IMPORT}")
             fuentes.append({"nombre": "Google Flights", "ok": False, "activo": False,
-                            "detalle": "fast-flights no instalado (necesita Python 3.10+)"})
+                            "detalle": f"no disponible: {ERROR_IMPORT}"[:200]})
 
     # ---------------- Evaluar
     tarifas = det.preparar(tarifas)

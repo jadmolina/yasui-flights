@@ -136,6 +136,9 @@ class Feeds:
                     ida_y_vuelta=_tipo_viaje(titulo + " " + resumen), link=link, encontrado=fecha,
                     titulo=titulo, es_error=bool(ERROR.search(titulo)), puente=not desde_pr,
                 ))
+            if not parsed.entries:
+                self.estado[nombre] = {"ok": False, "error": "el sitio no devolvió posts (puede estar bloqueando)"}
+                continue
             self.estado[nombre] = {"ok": True, "posts": len(parsed.entries), "desde_pr": encontrados}
         n_pr = sum(1 for t in tarifas if not t.puente)
         log(f"  Feeds: {n_pr} ofertas saliendo de Puerto Rico y {len(tarifas) - n_pr} desde otras ciudades (para combinados)")

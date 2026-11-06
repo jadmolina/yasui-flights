@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 from typing import Dict, List
 
-from .util import DOCS, env, guardar_json
+from .util import DOCS, env, guardar_json, supabase_url
 
 AQUI = Path(__file__).parent
 PLANTILLA = AQUI / "app.html"
@@ -21,7 +21,7 @@ def config_publica(config: dict) -> dict:
     """Lo que la página necesita saber. Todo esto es público (la publishable key está hecha para eso)."""
     return {
         "sitio": config.get("sitio", {}).get("nombre", "Yasui Flights"),
-        "supabase_url": env("SUPABASE_URL"),
+        "supabase_url": supabase_url(),
         "supabase_key": env("SUPABASE_PUBLISHABLE_KEY"),
         "remitente": env("GMAIL_USER") or config.get("email", {}).get("nombre_remitente", "Yasui Flights"),
     }
