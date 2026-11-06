@@ -1,0 +1,51 @@
+{
+ "ultima_corrida": "2026-11-06T02:21:41+00:00",
+ "segundos": 43,
+ "tarifas": 2993,
+ "ofertas": 27,
+ "personas": 0,
+ "fuentes": [
+  {
+   "nombre": "Aviasales",
+   "ok": true,
+   "n": 2978,
+   "detalle": ""
+  },
+  {
+   "nombre": "Secret Flying (San Juan)",
+   "ok": true,
+   "n": 0,
+   "detalle": "0 posts revisados"
+  },
+  {
+   "nombre": "Secret Flying",
+   "ok": true,
+   "n": 0,
+   "detalle": "0 posts revisados"
+  },
+  {
+   "nombre": "The Flight Deal",
+   "ok": true,
+   "n": 0,
+   "detalle": "16 posts revisados"
+  },
+  {
+   "nombre": "Fly4free",
+   "ok": true,
+   "n": 0,
+   "detalle": "50 posts revisados"
+  },
+  {
+   "nombre": "r/flightdeals",
+   "ok": true,
+   "n": 0,
+   "detalle": "25 posts revisados"
+  },
+  {
+   "nombre": "Google Flights",
+   "ok": false,
+   "activo": false,
+   "detalle": "fast-flights no instalado (necesita Python 3.10+)"
+  }
+ ]
+}
