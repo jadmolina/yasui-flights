@@ -1,0 +1,130 @@
+# ============================================================
+#  Configuración del buscador de vuelos baratos
+#  Puedes cambiar cualquier cosa aquí y se aplica en la próxima búsqueda.
+# ============================================================
+
+origen: SJU            # Aeropuerto de salida (San Juan)
+moneda: USD
+
+# ------------------------------------------------------------
+# Destinos base: se buscan siempre, aunque nadie los haya escogido.
+# (Los destinos que la gente escoge en la página se suman solos.)
+#   ciudad:     código de ciudad (Travelpayouts usa TYO, NYC, LON, PAR...)
+#   aeropuerto: aeropuerto principal (Google Flights)
+#   meta:       precio ida y vuelta (USD) que consideras "stupid cheap".
+#               Si no pones meta, se usa la de la región (más abajo).
+# ------------------------------------------------------------
+favoritos:
+  # Japón
+  - { nombre: "Tokio",        ciudad: TYO, aeropuerto: NRT, region: japon }
+  - { nombre: "Osaka",        ciudad: OSA, aeropuerto: KIX, region: japon }
+  # Hawaii
+  - { nombre: "Honolulu",     ciudad: HNL, aeropuerto: HNL, region: hawaii }
+  - { nombre: "Maui",         ciudad: OGG, aeropuerto: OGG, region: hawaii }
+  # Estados Unidos
+  - { nombre: "Nueva York",   ciudad: NYC, aeropuerto: JFK, region: usa, meta: 140 }
+  - { nombre: "Orlando",      ciudad: ORL, aeropuerto: MCO, region: usa, meta: 100 }
+  - { nombre: "Miami",        ciudad: MIA, aeropuerto: MIA, region: usa, meta: 110 }
+  - { nombre: "Boston",       ciudad: BOS, aeropuerto: BOS, region: usa, meta: 160 }
+  - { nombre: "Chicago",      ciudad: CHI, aeropuerto: ORD, region: usa, meta: 180 }
+  - { nombre: "Los Ángeles",  ciudad: LAX, aeropuerto: LAX, region: usa, meta: 250 }
+  - { nombre: "Las Vegas",    ciudad: LAS, aeropuerto: LAS, region: usa, meta: 250 }
+  # Canadá
+  - { nombre: "Toronto",      ciudad: YTO, aeropuerto: YYZ, region: canada }
+  - { nombre: "Montreal",     ciudad: YMQ, aeropuerto: YUL, region: canada }
+  - { nombre: "Vancouver",    ciudad: YVR, aeropuerto: YVR, region: canada, meta: 380 }
+  # Europa
+  - { nombre: "Madrid",       ciudad: MAD, aeropuerto: MAD, region: europa }
+  - { nombre: "Barcelona",    ciudad: BCN, aeropuerto: BCN, region: europa }
+  - { nombre: "Londres",      ciudad: LON, aeropuerto: LHR, region: europa }
+  - { nombre: "París",        ciudad: PAR, aeropuerto: CDG, region: europa }
+  - { nombre: "Roma",         ciudad: ROM, aeropuerto: FCO, region: europa }
+  - { nombre: "Lisboa",       ciudad: LIS, aeropuerto: LIS, region: europa }
+
+# ------------------------------------------------------------
+# Precio meta por región (ida y vuelta, USD).
+# Para destinos que NO son favoritos ("a donde sea") se usa el más
+# estricto entre esta meta y la regla de centavos por milla.
+# ------------------------------------------------------------
+metas_por_region:
+  japon: 650
+  hawaii: 350
+  usa: 150
+  canada: 300
+  europa: 400
+  caribe: 200
+  latinoamerica: 300
+  asia: 700
+  oceania: 900
+  medio_oriente_africa: 650
+  otros: 600
+
+reglas:
+  factor_error: 0.6          # Precio <= 60% de la meta  -> "Posible error de tarifa"
+  descuento_ganga: 0.35      # 35% o más bajo lo normal  -> "Ganga"
+  descuento_error: 0.50      # 50% o más bajo lo normal  -> "Posible error de tarifa"
+  centavos_por_milla: 3.5    # Regla para "a donde sea" (solo destinos a 1,500+ millas)
+  factor_solo_ida: 0.55      # Meta de solo ida = meta ida y vuelta x 0.55
+  dias_minimos_historial: 4  # Días de datos antes de calcular el precio "normal"
+
+# ------------------------------------------------------------
+# Fuentes
+# ------------------------------------------------------------
+travelpayouts:
+  activo: true
+  meses_a_buscar: 8          # Cuántos meses hacia adelante escanea "a donde sea"
+  maximo_destinos: 70        # Máximo de ciudades (tuyas + de los usuarios) que busca una por una en cada corrida
+
+# ------------------------------------------------------------
+# Combinados: ofertas que salen de una ciudad de EE.UU. ("puente")
+# + lo que cuesta llegar de SJU a esa ciudad.
+# ------------------------------------------------------------
+combinados:
+  activo: true
+  ahorro_minimo: 0.25        # El combinado tiene que salir 25%+ más barato que ir directo desde SJU
+  maximo_por_corrida: 20     # Cuántos combinados calcula con fechas exactas en cada corrida
+  dias_antes: 1              # Llegar a la ciudad puente 1 día antes (boletos separados)
+  puentes:
+    - { nombre: "Miami",           ciudad: MIA }
+    - { nombre: "Fort Lauderdale", ciudad: FLL }
+    - { nombre: "Orlando",         ciudad: ORL }
+    - { nombre: "Nueva York",      ciudad: NYC }
+    - { nombre: "Boston",          ciudad: BOS }
+    - { nombre: "Washington",      ciudad: WAS }
+    - { nombre: "Atlanta",         ciudad: ATL }
+    - { nombre: "Chicago",         ciudad: CHI }
+    - { nombre: "Dallas",          ciudad: DFW }
+    - { nombre: "Houston",         ciudad: HOU }
+    - { nombre: "Los Ángeles",     ciudad: LAX }
+    - { nombre: "San Francisco",   ciudad: SFO }
+
+google_flights:
+  activo: true
+  busquedas_por_corrida: 10  # Fechas al azar en tus favoritos, cada vez que corre
+  verificar_ofertas: 8       # Cuántas ofertas confirma en Google Flights por corrida
+  dias_de_viaje: [5, 7, 10]  # Duración de los viajes que prueba
+  dias_minimos: 14           # No busca vuelos que salgan antes de esto
+  dias_maximos: 270
+
+feeds:
+  activo: true
+  dias_a_mostrar: 10
+  lista:
+    - { nombre: "Secret Flying (San Juan)", url: "https://www.secretflying.com/posts/category/cities-countries/puerto-rico/san-juan/feed/" }
+    - { nombre: "Secret Flying",            url: "https://www.secretflying.com/feed/" }
+    - { nombre: "The Flight Deal",          url: "https://www.theflightdeal.com/feed/" }
+    - { nombre: "Fly4free",                 url: "https://www.fly4free.com/feed/" }
+    - { nombre: "r/flightdeals",            url: "https://www.reddit.com/r/flightdeals/.rss" }
+
+# ------------------------------------------------------------
+# La página y los emails
+# ------------------------------------------------------------
+sitio:
+  nombre: "Yasui Flights"
+
+email:
+  activo: true
+  nombre_remitente: "Yasui Flights"
+  nivel_minimo: 2            # 3 = solo posibles errores, 2 = errores + gangas, 1 = todo
+  dias_para_repetir: 14      # No repite la misma oferta antes de esto...
+  bajada_para_repetir: 0.10  # ...a menos que baje otro 10% o más

@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yasui Flights</title>
+<meta name="description" content="Vuelos ridículamente baratos y errores de tarifa saliendo de Puerto Rico. Escoge a dónde quieres ir y te avisamos por email.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23f26b3a' d='M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#f6f4ef; --panel:#ffffff; --ink:#14202b; --muted:#5d6b78; --line:#e3ded3;
+  --navy:#0f2a43; --accent:#f26b3a; --accent-ink:#ffffff; --accent-soft:#fde6dc;
+  --ganga:#0f8a7a; --ganga-soft:#d9f2ee; --oferta:#5b6cff; --oferta-soft:#e4e7ff;
+  --ok:#1d8a4e; --warn:#b4560f; --warn-soft:#fbeedd; --chip:#ece7dc; --shadow:0 1px 2px rgba(15,42,67,.06),0 6px 20px rgba(15,42,67,.06);
+  --radius:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0c141c; --panel:#131e29; --ink:#e8eef3; --muted:#93a3b2; --line:#22303d;
+    --navy:#0a1a29; --accent:#ff7d4d; --accent-ink:#1a0d06; --accent-soft:#3a2219;
+    --ganga:#3cc9b4; --ganga-soft:#14322e; --oferta:#8d99ff; --oferta-soft:#1f2446;
+    --ok:#4fd18a; --warn:#f0a35e; --warn-soft:#33240f; --chip:#1b2836; --shadow:none;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+a{color:inherit}
+button{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.aviso-top{background:#ffd34d;color:#2a2100;text-align:center;font-weight:650;font-size:13px;padding:6px 12px}
+
+/* ---------- header ---------- */
+.hero{background:var(--navy);color:#f3f6f9;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;right:-140px;top:-160px;width:520px;height:520px;
+  background:radial-gradient(closest-side,rgba(242,107,58,.42),rgba(242,107,58,0));pointer-events:none}
+.hero .wrap{position:relative;z-index:1}
+.barra{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0}
+.marca{display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:750;font-size:18px;letter-spacing:-.01em}
+.marca svg{width:22px;height:22px;fill:#ff8a5c}
+.marca small{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;color:#ffb796;margin-left:2px}
+.menu{display:flex;gap:6px;flex-wrap:wrap}
+.menu button{background:rgba(255,255,255,.1);border:0;color:#e5edf4;border-radius:999px;padding:6px 12px;font-size:13.5px;cursor:pointer}
+.menu button:hover{background:rgba(255,255,255,.18)}
+.hero h1{font-size:clamp(28px,5vw,46px);line-height:1.05;margin:18px 0 10px;letter-spacing:-.02em;font-weight:780;max-width:760px}
+.hero p.sub{color:#b7c5d3;margin:0;max-width:640px;font-size:16px}
+.hero .espacio{height:70px}
+.kanji{font-family:"Hiragino Sans","Yu Gothic",sans-serif;color:#ffb796}
+
+/* ---------- tarjeta central ---------- */
+.centro{max-width:480px;margin:-46px auto 40px;position:relative;z-index:2;padding:0 16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.panel h2{margin:0 0 6px;font-size:21px;letter-spacing:-.01em}
+.panel p{margin:0 0 14px;color:var(--muted)}
+label.campo{display:block;font-size:13px;font-weight:600;margin:12px 0 6px}
+input.txt{width:100%;font:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);outline:none}
+input.txt:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 22%,transparent)}
+input.codigo{font:700 26px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.45em;text-align:center;padding:12px 8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-size:14.5px;font-weight:650;padding:11px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel);cursor:pointer;white-space:nowrap}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.osc{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn.full{width:100%;margin-top:14px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn:hover:not([disabled]){filter:brightness(1.06)}
+.link{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.link[disabled]{color:var(--muted);cursor:default;text-decoration:none}
+.nota{font-size:13px;color:var(--muted);margin-top:12px}
+.error{color:#d23c2a;font-size:13.5px;margin-top:10px;min-height:1px}
+.ok-txt{color:var(--ok);font-size:13.5px;margin-top:10px}
+.puntos{display:grid;gap:10px;margin:18px 0 0;padding:0;list-style:none}
+.puntos li{display:flex;gap:10px;font-size:14px;color:var(--muted)}
+.puntos b{color:var(--ink)}
+.puntos i{flex:none;width:24px;height:24px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-style:normal;font-weight:700;font-size:12px}
+
+/* ---------- destinos ---------- */
+.ancho{max-width:760px}
+.buscador{position:relative}
+.sugerencias{position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,.14);z-index:5;overflow:hidden;max-height:340px;overflow-y:auto}
+.sug{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--line)}
+.sug:last-child{border-bottom:0}
+.sug[aria-selected="true"],.sug:hover{background:var(--chip)}
+.sug b{font-weight:650}
+.sug small{color:var(--muted);display:block;font-size:12.5px}
+.sug .desde{font-size:12.5px;color:var(--ok);font-weight:650;white-space:nowrap}
+.sug .ya{font-size:12px;color:var(--muted)}
+.grupo{margin-top:16px}
+.grupo h3{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin:0 0 8px;font-weight:650}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid transparent;background:var(--chip);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--line)}
+.chip.on{background:var(--ink);color:var(--bg)}
+.elegidos{display:flex;flex-wrap:wrap;gap:8px;min-height:44px;padding:10px;border:1px dashed var(--line);border-radius:12px;margin-top:8px}
+.elegido{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);color:var(--ink);border-radius:999px;padding:5px 6px 5px 12px;font-size:14px;font-weight:600}
+.elegido small{font-weight:500;color:var(--muted)}
+.elegido button{border:0;background:rgba(0,0,0,.08);width:22px;height:22px;border-radius:50%;cursor:pointer;line-height:1;font-size:14px}
+.vacio-sel{color:var(--muted);font-size:13.5px;align-self:center}
+.contador{font-size:12.5px;color:var(--muted);margin-top:6px}
+
+/* ---------- listo ---------- */
+.listo{text-align:center}
+.check{width:64px;height:64px;border-radius:50%;background:var(--ganga-soft);color:var(--ganga);display:grid;place-items:center;margin:2px auto 12px}
+.check svg{width:34px;height:34px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.listo h2{font-size:26px}
+.listo .chips{justify-content:center;margin:14px 0}
+.listo .chip{cursor:default;background:var(--accent-soft);font-weight:600}
+.caja{background:var(--chip);border-radius:12px;padding:12px 14px;font-size:13.5px;color:var(--muted);text-align:left;margin-top:12px}
+.caja b{color:var(--ink)}
+.acciones-listo{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+
+/* ---------- ofertas ---------- */
+.saludo{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;padding:22px 0 0}
+.saludo h1{margin:0;font-size:clamp(24px,4vw,34px);letter-spacing:-.02em}
+.saludo p{margin:4px 0 0;color:#b7c5d3}
+h2.sec{font-size:20px;margin:30px 0 4px;letter-spacing:-.01em}
+.h2sub{color:var(--muted);margin:0 0 14px;font-size:14px}
+.radar{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:-34px;position:relative;z-index:2}
+.rd{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:2px}
+.rd .t{font-weight:700;display:flex;justify-content:space-between;gap:6px}
+.rd .t small{font-weight:600;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+.rd .p{font-size:24px;font-weight:780;letter-spacing:-.01em}
+.rd .p.sin{font-size:14px;font-weight:500;color:var(--muted)}
+.rd .d{font-size:12.5px;color:var(--muted)}
+.rd .hay{font-size:11.5px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+.rd a{font-size:13px;font-weight:600;color:var(--accent);text-decoration:none;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 14px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow);position:relative}
+.card.n3{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.card.n3::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;border-radius:var(--radius) var(--radius) 0 0;background:var(--accent)}
+.top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:6px}
+.n3 .badge.niv{background:var(--accent);color:var(--accent-ink)}
+.n2 .badge.niv{background:var(--ganga-soft);color:var(--ganga)}
+.n1 .badge.niv{background:var(--oferta-soft);color:var(--oferta)}
+.badge.combo{background:var(--oferta-soft);color:var(--oferta)}
+.reg{font-size:12px;color:var(--muted)}
+.card h3{margin:2px 0 0;font-size:21px;letter-spacing:-.01em;line-height:1.15}
+.code{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);margin-left:6px;letter-spacing:.06em}
+.pais{color:var(--muted);font-size:13px;margin-top:-6px}
+.precio{display:flex;align-items:baseline;gap:8px;margin-top:2px;flex-wrap:wrap}
+.monto{font-size:36px;font-weight:780;letter-spacing:-.02em;line-height:1}
+.n3 .monto{color:var(--accent)}
+.tipo{color:var(--muted);font-size:13px}
+.comp{font-size:13.5px;color:var(--muted)}
+.comp strong{color:var(--ok)}
+.det{list-style:none;padding:0;margin:2px 0 0;display:grid;gap:3px;font-size:13.5px}
+.det li{display:flex;gap:8px;align-items:center}
+.det svg{width:14px;height:14px;flex:none;opacity:.6;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.tramos{display:grid;gap:6px;margin-top:2px}
+.tramo{background:var(--chip);border-radius:10px;padding:8px 10px;font-size:13.5px;display:grid;grid-template-columns:22px 1fr auto;gap:2px 8px;align-items:center}
+.tramo i{font-style:normal;width:22px;height:22px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-size:12px;font-weight:700;grid-row:span 2}
+.tramo b{font-weight:650}
+.tramo .pr{font-weight:750;text-align:right}
+.tramo small{color:var(--muted);grid-column:2 / span 2;font-size:12px}
+.ojo{font-size:12.5px;color:var(--warn);background:var(--warn-soft);border-radius:8px;padding:6px 9px}
+.verif{font-size:12.5px;padding:5px 9px;border-radius:8px;background:var(--chip)}
+.verif.si{color:var(--ok)} .verif.no{color:var(--warn)}
+.motivos{font-size:12.5px;color:var(--muted);margin:0}
+.titulo{font-size:12.5px;color:var(--muted);margin:0;font-style:italic}
+.acciones{display:flex;gap:8px;margin-top:auto;padding-top:6px;flex-wrap:wrap}
+.acciones .btn{flex:1 1 0;min-width:0;font-size:13px;padding:8px 8px;border-radius:10px}
+.vacio{background:var(--panel);border:1px dashed var(--line);border-radius:var(--radius);padding:26px;text-align:center;color:var(--muted)}
+.mas{margin:16px 0 0;text-align:center}
+footer.pie{color:var(--muted);font-size:13.5px;margin:40px 0 30px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+footer.pie h4{color:var(--ink);margin:0 0 4px;font-size:14px}
+footer.pie p{margin:0}
+.baja-zona{border-top:1px solid var(--line);padding:16px 0 40px;font-size:13.5px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.cargando{padding:80px 0;text-align:center;color:var(--muted)}
+@media (max-width:720px){
+  .wrap{padding:0 16px}
+  .monto{font-size:32px}
+  .radar{grid-template-columns:repeat(2,1fr);gap:8px}
+  .rd .p{font-size:20px}
+  .hero .espacio{height:60px}
+  .panel{padding:18px}
+}
+</style>
+</head>
+<body>
+<div id="avisos"></div>
+<div id="app"><div class="cargando">Cargando...</div></div>
+
+<script src="vendor/supabase.js"></script>
+<script>
+const DATOS = /*__DATOS__*/null;
+const D = DATOS || {config:{}, ofertas:[], precios:{}, lugares:[], populares:[]};
+const CFG = D.config || {};
+const REGIONES = {japon:"Japón",hawaii:"Hawaii",usa:"EE.UU.",canada:"Canadá",europa:"Europa",caribe:"Caribe",latinoamerica:"Latinoamérica",asia:"Asia",oceania:"Oceanía",medio_oriente_africa:"Medio Oriente y África",otros:"Otros","*":"Cualquier error de tarifa"};
+const REGION_RAPIDA = ["japon","hawaii","europa","usa","canada","caribe","latinoamerica","asia","*"];
+const MAX_DESTINOS = 40;
+
+/* ------------------------------------------------------------ utilidades */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dinero = n => n == null ? "—" : "$" + Math.round(n).toLocaleString("en-US");
+const fmtFecha = d => { if(!d) return ""; const x = new Date(String(d).slice(0,10) + "T12:00:00"); return x.toLocaleDateString("es-PR",{day:"numeric",month:"short"}).replace(".",""); };
+const dias = (a,b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9* ]+/g," ").trim();
+function hace(iso){
+  if(!iso) return "";
+  const m = (Date.now() - new Date(iso)) / 6e4;
+  if (m < 2) return "ahora";
+  if (m < 60) return `hace ${Math.round(m)} min`;
+  const h = m / 60; if (h < 24) return `hace ${Math.round(h)} h`;
+  const d = h / 24; return d < 2 ? "ayer" : `hace ${Math.round(d)} días`;
+}
+const guardarLocal = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} };
+const leerLocal = (k, def) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : def; } catch(e) { return def; } };
+const ICON = {
+  avion:'<svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z"/></svg>',
+  cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
+  vuelo:'<svg viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
+  ojo:'<svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  check:'<svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+};
+
+/* ------------------------------------------------------------ lugares (buscador) */
+const LUG = (D.lugares || []).map(([c,n,en,p,t]) => ({c, n, en, p, t, k: " " + norm(`${n} ${en}`) }));
+const LUG_IDX = {}; LUG.forEach(l => LUG_IDX[l.t + ":" + l.c] = l);
+const PAIS_NOMBRE = {}; LUG.forEach(l => { if (l.t === "p") PAIS_NOMBRE[l.c] = l.n; });
+const PRECIOS = D.precios || {};
+
+function mejorPrecio(d){
+  if (d.t === "c") return PRECIOS[d.c] ? PRECIOS[d.c].precio : null;
+  let mejor = null;
+  for (const [c, p] of Object.entries(PRECIOS)) {
+    const pais = p.pais || (LUG_IDX["c:" + c] || {}).p;
+    const ok = d.t === "p" ? pais === d.c : (d.c !== "*" && p.region === d.c);
+    if (ok && (mejor == null || p.precio < mejor)) mejor = p.precio;
+  }
+  return mejor;
+}
+function etiquetaTipo(l){
+  if (l.t === "r") return l.c === "*" ? "Cualquier destino" : "Región";
+  if (l.t === "p") return "País";
+  return [PAIS_NOMBRE[l.p] || l.p, l.en].filter(Boolean).join(" · ");
+}
+function sugerencias(q){
+  const n = norm(q); if (!n) return [];
+  const codigo = q.trim().toUpperCase();
+  const res = [];
+  for (const l of LUG) {
+    let s = 0;
+    if (l.c === codigo && l.t === "c") s = 120;
+    else if (l.k.includes(" " + n)) s = 60 - Math.min(20, l.k.length / 4);
+    else if (n.length >= 3 && l.k.includes(n)) s = 25;
+    if (!s) continue;
+    if (l.t === "p") s += 12;
+    if (l.t === "r") s += 18;
+    if (l.t === "c" && PRECIOS[l.c]) s += 15;
+    if ((D.populares || []).includes(l.c)) s += 10;
+    res.push([s, l]);
+  }
+  res.sort((a,b) => b[0] - a[0]);
+  return res.slice(0, 8).map(x => x[1]);
+}
+const nombreDestino = d => d.n || (LUG_IDX[d.t + ":" + d.c] || {}).n || REGIONES[d.c] || d.c;
+
+/* ------------------------------------------------------------ coincide (igual que en Python) */
+function coincide(o, destinos){
+  for (const d of destinos || []) {
+    if (d.t === "c" && (d.c === o.destino || d.c === o.aeropuerto)) return true;
+    if (d.t === "p" && d.c === o.pais) return true;
+    if (d.t === "r" && (d.c === o.region || (d.c === "*" && o.nivel >= 3))) return true;
+  }
+  return false;
+}
+
+/* ------------------------------------------------------------ cuentas: Supabase o modo prueba */
+let sb = null;
+try {
+  if (CFG.supabase_url && CFG.supabase_key && window.supabase)
+    sb = window.supabase.createClient(CFG.supabase_url, CFG.supabase_key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false } });
+} catch (e) { console.error(e); }
+const PRUEBA = !sb;
+
+function traducirError(err){
+  const m = String((err && (err.message || err.error_description)) || err || "");
+  if (/expired|invalid|otp/i.test(m)) return "Ese código no es correcto o ya se venció. Pide uno nuevo.";
+  if (/security purposes|rate limit|after \d+ seconds|too many/i.test(m)) return "Espera un minuto antes de pedir otro código.";
+  if (/email.*invalid|valid email/i.test(m)) return "Ese email no parece correcto.";
+  if (/fetch|network|failed/i.test(m)) return "No hay conexión. Intenta otra vez.";
+  return "Algo salió mal: " + m;
+}
+
+const Cuenta = PRUEBA ? {
+  async enviarCodigo(email){ guardarLocal("yasui_prueba_email", email); },
+  async verificar(email, codigo){ if (codigo !== "123456") throw new Error("invalid otp"); const u = {id: "prueba-" + norm(email).replace(/ /g,""), email}; guardarLocal("yasui_prueba_user", u); return u; },
+  async usuario(){ return leerLocal("yasui_prueba_user", null); },
+  async salir(){ guardarLocal("yasui_prueba_user", null); },
+  async perfil(u){ return leerLocal("yasui_prueba_perfil_" + u.id, null); },
+  async guardar(u, datos){ const p = {...(await this.perfil(u) || {}), ...datos, email: u.email, activo: true}; guardarLocal("yasui_prueba_perfil_" + u.id, p); return p; },
+  async baja(u){ const p = await this.perfil(u); if (p) { p.activo = false; guardarLocal("yasui_prueba_perfil_" + u.id, p); } },
+  async bajaConToken(){ return true; },
+} : {
+  async enviarCodigo(email){ const { error } = await sb.auth.signInWithOtp({ email, options: { shouldCreateUser: true } }); if (error) throw error; },
+  async verificar(email, codigo){ const { data, error } = await sb.auth.verifyOtp({ email, token: codigo, type: "email" }); if (error) throw error; return data.user; },
+  async usuario(){ const { data } = await sb.auth.getSession(); return data.session ? data.session.user : null; },
+  async salir(){ await sb.auth.signOut(); },
+  async perfil(u){ const { data, error } = await sb.from("suscriptores").select("nombre,destinos,activo").eq("user_id", u.id).maybeSingle(); if (error) throw error; return data; },
+  async guardar(u, datos){
+    const fila = { user_id: u.id, email: u.email, nombre: datos.nombre || null, destinos: datos.destinos, activo: true };
+    const { data, error } = await sb.from("suscriptores").upsert(fila, { onConflict: "user_id" }).select("nombre,destinos,activo").single();
+    if (error) throw error; return data;
+  },
+  async baja(u){ const { error } = await sb.from("suscriptores").update({ activo: false }).eq("user_id", u.id); if (error) throw error; },
+  async bajaConToken(token){ const { data, error } = await sb.rpc("darse_de_baja", { p_token: token }); if (error) throw error; return data === true; },
+};
+
+/* ------------------------------------------------------------ estado */
+const E = { user: null, perfil: null, email: leerLocal("yasui_ultimo_email", ""), sel: [], nombre: "", verTodas: false };
+
+function avisosTop(){
+  const a = [];
+  if (PRUEBA) a.push('<div class="aviso-top">MODO PRUEBA: todavía no está conectado Supabase. El código siempre es 123456 y lo que guardes se queda en este navegador.</div>');
+  if (D.demo) a.push('<div class="aviso-top">DATOS DE EJEMPLO: los precios de esta página son inventados para ver cómo se ve.</div>');
+  $("#avisos").innerHTML = a.join("");
+}
+
+function hero({ titulo = "", sub = "", menu = false, alto = true, extra = "" } = {}){
+  return `<header class="hero"><div class="wrap">
+    <div class="barra">
+      <a class="marca" href="#" onclick="return irInicio()">${ICON.avion}<span>Yasui Flights</span><small>SJU</small></a>
+      ${menu ? `<nav class="menu"><button onclick="irDestinos()">Mis destinos</button><button onclick="salir()">Salir</button></nav>` : ""}
+    </div>
+    ${titulo ? `<h1>${titulo}</h1>` : ""}
+    ${sub ? `<p class="sub">${sub}</p>` : ""}
+    ${extra}
+    ${alto ? '<div class="espacio"></div>' : ""}
+  </div></header>`;
+}
+
+/* ============================================================ PANTALLA: entrar */
+function pantallaEntrar(paso = "email", msg = ""){
+  const app = $("#app");
+  if (paso === "email") {
+    app.innerHTML = hero({
+      titulo: 'Vuelos ridículamente baratos saliendo de Puerto Rico',
+      sub: 'Escoge a dónde quieres ir y te avisamos por email cuando salgan precios locos o errores de tarifa. <span class="kanji">安い</span> <i>yasui</i> = barato en japonés.'
+    }) + `
+    <section class="centro"><div class="panel">
+      <h2>Entra con tu email</h2>
+      <p>No hace falta contraseña. Te mandamos un código de 6 números cada vez que entres.</p>
+      <form id="f-email" novalidate>
+        <label class="campo" for="email">Tu email</label>
+        <input class="txt" id="email" type="email" inputmode="email" autocomplete="email" placeholder="tu@email.com" value="${esc(E.email)}" required>
+        <button class="btn pri full" id="b-enviar" type="submit">Enviarme el código</button>
+        <div class="error" id="err">${esc(msg)}</div>
+      </form>
+      <ul class="puntos">
+        <li><i>1</i><span><b>Escoge tus destinos.</b> Japón, Madrid, Hawaii... o "cualquier error de tarifa".</span></li>
+        <li><i>2</i><span><b>Buscamos cada 4 horas</b> en Aviasales, Google Flights y sitios de mistake fares.</span></li>
+        <li><i>3</i><span><b>Te escribimos solo cuando sale algo bueno.</b> Te puedes dar de baja cuando quieras.</span></li>
+      </ul>
+    </div></section>`;
+    $("#f-email").onsubmit = async ev => {
+      ev.preventDefault();
+      const email = $("#email").value.trim().toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { $("#err").textContent = "Escribe un email válido."; return; }
+      const b = $("#b-enviar"); b.disabled = true; b.textContent = "Enviando...";
+      try { await Cuenta.enviarCodigo(email); E.email = email; guardarLocal("yasui_ultimo_email", email); pantallaEntrar("codigo"); }
+      catch (err) { $("#err").textContent = traducirError(err); b.disabled = false; b.textContent = "Enviarme el código"; }
+    };
+    setTimeout(() => $("#email") && $("#email").focus(), 50);
+    return;
+  }
+  // paso: código
+  app.innerHTML = hero({ titulo: "Revisa tu email", sub: `Te mandamos un código a <b>${esc(E.email)}</b>.` }) + `
+    <section class="centro"><div class="panel">
+      <h2>Escribe el código</h2>
+      <p>Son 6 números. Se vence en unos minutos y sirve una sola vez.${PRUEBA ? " <b>(Modo prueba: 123456)</b>" : ""}</p>
+      <form id="f-codigo" novalidate>
+        <label class="sr" for="codigo">Código</label>
+        <input class="txt codigo num" id="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="······">
+        <button class="btn pri full" id="b-entrar" type="submit">Entrar</button>
+        <div class="error" id="err">${esc(msg)}</div>
+      </form>
+      <p class="nota">¿No te llegó? Búscalo en spam o promociones. Llega de <b>${esc(CFG.remitente || "Yasui Flights")}</b>.</p>
+      <p class="nota"><button class="link" id="b-reenviar" disabled>Reenviar código</button> &nbsp;·&nbsp; <button class="link" id="b-otro">Usar otro email</button></p>
+    </div></section>`;
+  const inp = $("#codigo");
+  inp.oninput = () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 6); if (inp.value.length === 6) $("#f-codigo").requestSubmit(); };
+  $("#f-codigo").onsubmit = async ev => {
+    ev.preventDefault();
+    const codigo = inp.value.trim();
+    if (codigo.length !== 6) { $("#err").textContent = "El código tiene 6 números."; return; }
+    const b = $("#b-entrar"); b.disabled = true; b.textContent = "Entrando...";
+    try { E.user = await Cuenta.verificar(E.email, codigo); await despuesDeEntrar(); }
+    catch (err) { $("#err").textContent = traducirError(err); b.disabled = false; b.textContent = "Entrar"; inp.select(); }
+  };
+  $("#b-otro").onclick = () => pantallaEntrar("email");
+  const rb = $("#b-reenviar"); let s = 60;
+  const tick = () => { if (!document.body.contains(rb)) return; if (s <= 0) { rb.disabled = false; rb.textContent = "Reenviar código"; return; } rb.textContent = `Reenviar código (${s}s)`; s--; setTimeout(tick, 1000); };
+  tick();
+  rb.onclick = async () => {
+    rb.disabled = true;
+    try { await Cuenta.enviarCodigo(E.email); $("#err").innerHTML = '<span class="ok-txt">Te mandamos un código nuevo.</span>'; s = 60; tick(); }
+    catch (err) { $("#err").textContent = traducirError(err); rb.disabled = false; }
+  };
+  setTimeout(() => inp.focus(), 50);
+}
+
+async function despuesDeEntrar(){
+  try { E.perfil = await Cuenta.perfil(E.user); } catch (err) { E.perfil = null; console.error(err); }
+  E.sel = (E.perfil && E.perfil.destinos) ? E.perfil.destinos.slice() : [];
+  E.nombre = (E.perfil && E.perfil.nombre) || "";
+  if (!E.perfil || !E.perfil.activo || !E.sel.length) pantallaDestinos(); else pantallaOfertas();
+}
+
+/* ============================================================ PANTALLA: destinos */
+function pantallaDestinos(){
+  const nuevo = !(E.perfil && E.perfil.activo && (E.perfil.destinos || []).length);
+  $("#app").innerHTML = hero({
+    menu: !nuevo,
+    titulo: "¿A dónde quieres ir?",
+    sub: "Escoge ciudades, países o regiones. Te avisamos de los mejores precios y errores de tarifa saliendo de SJU para esos lugares."
+  }) + `
+  <section class="centro ancho"><div class="panel">
+    <label class="campo" for="nombre">¿Cómo te llamas? <span style="font-weight:400;color:var(--muted)">(opcional, para saludarte)</span></label>
+    <input class="txt" id="nombre" maxlength="60" autocomplete="given-name" placeholder="Tu nombre" value="${esc(E.nombre)}">
+
+    <label class="campo" for="busca">Busca un destino</label>
+    <div class="buscador">
+      <input class="txt" id="busca" autocomplete="off" placeholder="Tokio, Madrid, Japón, Hawaii..." role="combobox" aria-expanded="false" aria-controls="sug" aria-autocomplete="list">
+      <div class="sugerencias" id="sug" role="listbox" hidden></div>
+    </div>
+
+    <div class="grupo"><h3>Rápido</h3><div class="chips" id="rapidas"></div></div>
+    <div class="grupo"><h3>Populares</h3><div class="chips" id="populares"></div></div>
+
+    <div class="grupo"><h3>Tus destinos</h3>
+      <div class="elegidos" id="elegidos"></div>
+      <div class="contador" id="contador"></div>
+    </div>
+    <button class="btn pri full" id="b-guardar">Guardar mis destinos</button>
+    <div class="error" id="err"></div>
+  </div></section>`;
+
+  const busca = $("#busca"), sug = $("#sug");
+  let lista = [], activo = -1;
+  const yaEsta = l => E.sel.some(d => d.t === l.t && d.c === l.c);
+  function pintarSug(){
+    if (!lista.length) { sug.hidden = true; busca.setAttribute("aria-expanded","false"); return; }
+    sug.innerHTML = lista.map((l, i) => {
+      const p = mejorPrecio(l);
+      return `<div class="sug" role="option" id="sug-${i}" aria-selected="${i === activo}" data-i="${i}">
+        <span><b>${esc(l.n)}</b><small>${esc(etiquetaTipo(l))}</small></span>
+        ${yaEsta(l) ? '<span class="ya">Ya está</span>' : (p ? `<span class="desde num">desde ${dinero(p)}</span>` : "")}
+      </div>`;
+    }).join("");
+    sug.hidden = false; busca.setAttribute("aria-expanded","true");
+    sug.querySelectorAll(".sug").forEach(el => el.onmousedown = ev => { ev.preventDefault(); elegir(lista[+el.dataset.i]); });
+  }
+  function elegir(l){
+    if (!l) return;
+    if (!yaEsta(l)) {
+      if (E.sel.length >= MAX_DESTINOS) { $("#err").textContent = `Máximo ${MAX_DESTINOS} destinos.`; return; }
+      E.sel.push({ t: l.t, c: l.c, n: l.n });
+    }
+    busca.value = ""; lista = []; activo = -1; pintarSug(); pintarSel(); busca.focus();
+  }
+  busca.oninput = () => { lista = sugerencias(busca.value); activo = lista.length ? 0 : -1; pintarSug(); };
+  busca.onkeydown = ev => {
+    if (ev.key === "ArrowDown" && lista.length) { ev.preventDefault(); activo = (activo + 1) % lista.length; pintarSug(); }
+    else if (ev.key === "ArrowUp" && lista.length) { ev.preventDefault(); activo = (activo - 1 + lista.length) % lista.length; pintarSug(); }
+    else if (ev.key === "Enter") { ev.preventDefault(); if (activo >= 0) elegir(lista[activo]); }
+    else if (ev.key === "Escape") { lista = []; pintarSug(); }
+  };
+  busca.onblur = () => setTimeout(() => { lista = []; pintarSug(); }, 150);
+
+  function chipsRapidas(){
+    $("#rapidas").innerHTML = REGION_RAPIDA.map(r => {
+      const on = E.sel.some(d => d.t === "r" && d.c === r);
+      return `<button class="chip ${on ? "on" : ""}" data-r="${r}" aria-pressed="${on}">${esc(REGIONES[r])}</button>`;
+    }).join("");
+    $("#rapidas").querySelectorAll(".chip").forEach(b => b.onclick = () => {
+      const r = b.dataset.r, i = E.sel.findIndex(d => d.t === "r" && d.c === r);
+      if (i >= 0) E.sel.splice(i, 1); else E.sel.push({ t: "r", c: r, n: REGIONES[r] });
+      pintarSel();
+    });
+    $("#populares").innerHTML = (D.populares || []).map(c => LUG_IDX["c:" + c]).filter(Boolean).map(l => {
+      const on = yaEsta(l);
+      return `<button class="chip ${on ? "on" : ""}" data-c="${esc(l.c)}" aria-pressed="${on}">${esc(l.n)}</button>`;
+    }).join("");
+    $("#populares").querySelectorAll(".chip").forEach(b => b.onclick = () => {
+      const l = LUG_IDX["c:" + b.dataset.c], i = E.sel.findIndex(d => d.t === "c" && d.c === l.c);
+      if (i >= 0) E.sel.splice(i, 1); else E.sel.push({ t: "c", c: l.c, n: l.n });
+      pintarSel();
+    });
+  }
+  function pintarSel(){
+    $("#elegidos").innerHTML = E.sel.length ? E.sel.map((d, i) =>
+      `<span class="elegido">${esc(nombreDestino(d))}${d.t !== "c" ? ` <small>${d.t === "p" ? "país" : "región"}</small>` : ""}<button aria-label="Quitar ${esc(nombreDestino(d))}" data-i="${i}">&times;</button></span>`).join("")
+      : '<span class="vacio-sel">Todavía no has escogido nada. Busca arriba o toca uno de los botones.</span>';
+    $("#elegidos").querySelectorAll("button").forEach(b => b.onclick = () => { E.sel.splice(+b.dataset.i, 1); pintarSel(); });
+    $("#contador").textContent = E.sel.length ? `${E.sel.length} de ${MAX_DESTINOS}` : "";
+    $("#b-guardar").disabled = !E.sel.length;
+    chipsRapidas();
+  }
+  pintarSel();
+
+  $("#b-guardar").onclick = async () => {
+    const b = $("#b-guardar"); b.disabled = true; b.textContent = "Guardando...";
+    E.nombre = $("#nombre").value.trim().slice(0, 60);
+    try {
+      E.perfil = await Cuenta.guardar(E.user, { nombre: E.nombre, destinos: E.sel });
+      pantallaListo();
+    } catch (err) { $("#err").textContent = traducirError(err); b.disabled = false; b.textContent = "Guardar mis destinos"; }
+  };
+}
+
+/* ============================================================ PANTALLA: ¡listo! */
+function pantallaListo(){
+  const nombre = E.nombre ? `, ${esc(E.nombre)}` : "";
+  $("#app").innerHTML = hero({ menu: true }) + `
+  <section class="centro"><div class="panel listo">
+    <div class="check">${ICON.check}</div>
+    <h2>¡Listo${nombre}!</h2>
+    <p>Te van a estar llegando emails con vuelos baratos de los lugares que seleccionaste:</p>
+    <div class="chips">${E.sel.map(d => `<span class="chip">${esc(nombreDestino(d))}</span>`).join("")}</div>
+    <div class="caja">
+      <b>¿Cada cuánto?</b> Buscamos cada 4 horas y solo te escribimos cuando sale algo bueno. El primer email te llega en las próximas horas con los precios de hoy.
+    </div>
+    <div class="caja">
+      <b>Para que no se pierdan:</b> los emails llegan de <b>${esc(CFG.remitente || "Yasui Flights")}</b>. Si el primero cae en spam, márcalo como "No es spam".
+    </div>
+    <div class="acciones-listo">
+      <button class="btn pri" onclick="pantallaOfertas()">Ver ofertas de ahora</button>
+      <button class="btn" onclick="irDestinos()">Cambiar destinos</button>
+    </div>
+  </div></section>`;
+  window.scrollTo(0, 0);
+}
+
+/* ============================================================ PANTALLA: mis ofertas */
+function tarjeta(o){
+  const region = REGIONES[o.region] || "";
+  const titulo = `<h3>${esc(o.destino_nombre)}<span class="code">${esc(o.aeropuerto && o.aeropuerto.length === 3 ? o.aeropuerto : (o.destino.length <= 4 ? o.destino : ""))}</span></h3>
+    ${o.pais_nombre && o.pais_nombre !== o.destino_nombre ? `<div class="pais">${esc(o.pais_nombre)}</div>` : ""}`;
+  const motivos = o.motivos && o.motivos.length ? `<p class="motivos">${esc(o.motivos.join(" · "))}</p>` : "";
+  if (o.tipo === "combinado") {
+    const p = o.puente, t = o.tramo;
+    const comp = o.directo ? `Directo desde SJU ~${dinero(o.directo)}${o.descuento > 0 ? ` &middot; <strong>${Math.round(o.descuento * 100)}% menos</strong>` : ""}` : `Precio meta: ${dinero(o.meta)}`;
+    const fp = p.salida ? `${fmtFecha(p.salida)}${p.regreso ? " → " + fmtFecha(p.regreso) : ""}` : "según tus fechas";
+    const ft = t.salida ? `${fmtFecha(t.salida)}${t.regreso ? " → " + fmtFecha(t.regreso) : ""}` : "fechas en el post";
+    return `<article class="card n${o.nivel}">
+      <div class="top"><span class="badges"><span class="badge combo">Combinado</span><span class="badge niv">${esc(o.nivel_nombre)}</span></span><span class="reg">${esc(region)}</span></div>
+      ${titulo}
+      <div class="precio"><span class="monto num">${dinero(o.precio)}</span><span class="tipo">total${p.exacto ? "" : " aprox."} ida y vuelta</span></div>
+      <div class="comp">${comp}</div>
+      <div class="tramos">
+        <div class="tramo"><i>1</i><b>SJU → ${esc(p.nombre)}</b><span class="pr num">${p.exacto ? "" : "~"}${dinero(p.precio)}</span><small>${esc(fp)}${p.aerolinea ? " · " + esc(p.aerolinea) : ""}</small></div>
+        <div class="tramo"><i>2</i><b>${esc(p.nombre)} → ${esc(o.destino_nombre)}</b><span class="pr num">${dinero(t.precio)}</span><small>${esc(ft)}${t.aerolinea ? " · " + esc(t.aerolinea) : ""} · ${esc(t.sitio || "")}</small></div>
+      </div>
+      ${t.titulo ? `<p class="titulo">"${esc(t.titulo)}"</p>` : ""}
+      <div class="ojo">Boletos separados: llega a ${esc(p.nombre)} un día antes y regresa un día después.</div>
+      ${motivos}
+      <div class="acciones">
+        <a class="btn osc" href="${esc(p.link)}" target="_blank" rel="noopener">Vuelo a ${esc(p.nombre)}</a>
+        <a class="btn" href="${esc(t.link)}" target="_blank" rel="noopener">Vuelo a ${esc(o.destino_nombre)}</a>
+      </div>
+    </article>`;
+  }
+  const fechas = o.salida ? `${fmtFecha(o.salida)}${o.regreso ? ` &rarr; ${fmtFecha(o.regreso)} &middot; ${dias(o.salida, o.regreso)} días` : " &middot; solo ida"}` : "Fechas en el post";
+  const escalas = o.escalas == null ? null : (o.escalas === 0 ? "directo" : `${o.escalas} escala${o.escalas > 1 ? "s" : ""}`);
+  const vuelo = [o.aerolinea, escalas].filter(Boolean).map(esc).join(" &middot; ");
+  const comp = o.mediana ? `Normal ~${dinero(o.mediana)}${o.descuento > 0 ? ` &middot; <strong>${Math.round(o.descuento * 100)}% menos</strong>` : ""}` : (o.meta ? `Precio meta: ${dinero(o.meta)}` : "");
+  let verif = "";
+  if (o.fuente !== "google" && o.verificado === true) verif = `<div class="verif si">Confirmado en Google Flights: ${dinero(o.precio_google)}</div>`;
+  else if (o.verificado === false) verif = `<div class="verif no">Google Flights lo tiene a ${dinero(o.precio_google)} para esas fechas (puede que ya no esté)</div>`;
+  const ver = o.link && o.fuente !== "google" ? `<a class="btn" href="${esc(o.link)}" target="_blank" rel="noopener">${o.fuente === "feed" ? "Ver post" : "Aviasales"}</a>` : "";
+  return `<article class="card n${o.nivel}">
+    <div class="top"><span class="badges"><span class="badge niv">${esc(o.nivel_nombre)}</span></span><span class="reg">${esc(region)}</span></div>
+    ${titulo}
+    <div class="precio"><span class="monto num">${dinero(o.precio)}</span><span class="tipo">${o.ida_y_vuelta ? "ida y vuelta" : "solo ida"} desde SJU</span></div>
+    <div class="comp">${comp}</div>
+    <ul class="det">
+      <li>${ICON.cal}<span>${fechas}</span></li>
+      ${vuelo ? `<li>${ICON.vuelo}<span>${vuelo}</span></li>` : ""}
+      <li>${ICON.ojo}<span>${esc(o.sitio || o.fuente)} &middot; ${hace(o.fuente === "feed" ? (o.encontrado || o.primera_vez) : o.ultima_vez)}</span></li>
+    </ul>
+    ${o.titulo ? `<p class="titulo">"${esc(o.titulo)}"</p>` : ""}
+    ${verif}${motivos}
+    <div class="acciones"><a class="btn osc" href="${esc(o.fuente === "google" && o.link ? o.link : o.link_google)}" target="_blank" rel="noopener">Google Flights</a>${ver}</div>
+  </article>`;
+}
+
+const ordenar = l => l.sort((a,b) => b.nivel - a.nivel || (b.descuento || 0) - (a.descuento || 0) || a.precio - b.precio);
+
+function tarjetaRadar(d){
+  const ofertas = ordenar((D.ofertas || []).filter(o => coincide(o, [d])));
+  const mejor = ofertas[0];
+  let precio = null, info = "", link = "";
+  if (d.t === "c" && PRECIOS[d.c]) {
+    const p = PRECIOS[d.c]; precio = p.precio; link = p.link;
+    info = [p.salida ? `${fmtFecha(p.salida)}–${fmtFecha(p.regreso)}` : (p.fecha && p.fecha !== D.hoy ? `visto ${fmtFecha(p.fecha)}` : ""), p.mediana ? `normal ~${dinero(p.mediana)}` : ""].filter(Boolean).join(" · ");
+  } else if (d.t !== "c") {
+    precio = mejorPrecio(d);
+    info = d.c === "*" ? "Te avisamos de cualquier error de tarifa" : "mejor precio en esa zona";
+  }
+  if (mejor && (precio == null || mejor.precio <= precio)) { precio = mejor.precio; link = mejor.tipo === "combinado" ? mejor.tramo.link : mejor.link_google; info = `${mejor.destino_nombre}${mejor.tipo === "combinado" ? " (combinado)" : ""}`; }
+  return `<div class="rd">
+    <div class="t"><span>${esc(nombreDestino(d))}</span>${d.t !== "c" ? `<small>${d.t === "p" ? "país" : "región"}</small>` : ""}</div>
+    ${mejor ? `<span class="hay">${ofertas.length} oferta${ofertas.length > 1 ? "s" : ""}</span>` : ""}
+    <div class="p num ${precio == null ? "sin" : ""}">${precio == null ? (d.c === "*" ? "Vigilando" : "Buscando precios...") : "desde " + dinero(precio)}</div>
+    ${info ? `<div class="d">${esc(info)}</div>` : ""}
+    ${link ? `<a href="${esc(link)}" target="_blank" rel="noopener">Buscar vuelos</a>` : ""}
+  </div>`;
+}
+
+function pantallaOfertas(){
+  const nombre = E.nombre ? `, ${esc(E.nombre)}` : "";
+  const todas = ordenar((D.ofertas || []).slice());
+  const mias = todas.filter(o => coincide(o, E.sel));
+  const otras = todas.filter(o => !coincide(o, E.sel));
+  $("#app").innerHTML = hero({ menu: true, alto: true, extra: `<div class="saludo"><div><h1>Hola${nombre}</h1><p>Actualizado ${esc(hace(D.generado))} · buscamos cada 4 horas · precios en USD por persona</p></div></div>` }) + `
+  <main class="wrap">
+    <section class="radar">${E.sel.map(tarjetaRadar).join("")}</section>
+
+    <h2 class="sec">Ofertas para ti</h2>
+    <p class="h2sub">Las de tus destinos, las más locas primero. Si algo te gusta, búscalo ya: estos precios duran poco.</p>
+    <section class="grid">${mias.length ? mias.map(tarjeta).join("") : `<div class="vacio">Ahora mismo no hay ofertas locas para tus destinos. Seguimos buscando y te escribimos apenas salga algo.</div>`}</section>
+
+    ${otras.length ? `<div class="mas"><button class="btn" id="b-todas">${E.verTodas ? "Esconder" : "Ver"} otras ofertas (${otras.length})</button></div>
+    <section class="grid" id="otras" style="margin-top:14px" ${E.verTodas ? "" : "hidden"}>${E.verTodas ? otras.slice(0, 60).map(tarjeta).join("") : ""}</section>` : ""}
+
+    <footer class="pie">
+      <div><h4>Reserva primero, planifica después</h4><p>Desde Puerto Rico aplica la regla de 24 horas del DOT: si reservas con 7+ días de anticipación, puedes cancelar gratis dentro de 24 horas.</p></div>
+      <div><h4>No compres hotel todavía</h4><p>Espera a que la aerolínea emita el boleto. A veces cancelan los errores de tarifa.</p></div>
+      <div><h4>Combinados</h4><p>Son boletos separados: si el primer vuelo se atrasa, la otra aerolínea no te ayuda. Llega un día antes.</p></div>
+    </footer>
+    <div class="baja-zona" id="baja-zona">
+      <span>¿Ya no quieres recibir emails?</span> <button class="link" id="b-baja">Darme de baja</button>
+    </div>
+  </main>`;
+  const bt = $("#b-todas");
+  if (bt) bt.onclick = () => { E.verTodas = !E.verTodas; pantallaOfertas(); setTimeout(() => $("#otras") && $("#otras").scrollIntoView({behavior:"smooth", block:"start"}), 30); };
+  $("#b-baja").onclick = () => {
+    $("#baja-zona").innerHTML = `<span><b>¿Seguro?</b> Ya no te van a llegar emails de Yasui Flights.</span>
+      <button class="btn" id="b-baja-si">Sí, darme de baja</button><button class="link" id="b-baja-no">Cancelar</button>`;
+    $("#b-baja-no").onclick = pantallaOfertas;
+    $("#b-baja-si").onclick = async () => {
+      try { await Cuenta.baja(E.user); E.perfil = { ...(E.perfil || {}), activo: false }; pantallaBajaLista(true); }
+      catch (err) { $("#baja-zona").innerHTML = `<span class="error">${esc(traducirError(err))}</span>`; }
+    };
+  };
+}
+
+/* ============================================================ PANTALLA: baja */
+function pantallaBajaLista(ok, porLink = false){
+  $("#app").innerHTML = hero({ menu: !porLink && !!E.user }) + `
+  <section class="centro"><div class="panel listo">
+    <h2>${ok ? "Listo, te diste de baja" : "Ese link ya no sirve"}</h2>
+    <p>${ok ? "Ya no te van a llegar emails de Yasui Flights." : "Puede que ya te hubieras dado de baja. Si quieres, entra con tu email y lo revisas."}</p>
+    <div class="caja">¿Cambiaste de idea? Entra con tu email y guarda tus destinos otra vez.</div>
+    <div class="acciones-listo"><button class="btn pri" onclick="irDestinos()">Volver a apuntarme</button></div>
+  </div></section>`;
+}
+async function pantallaBaja(token){
+  $("#app").innerHTML = hero({}) + `<section class="centro"><div class="panel listo"><h2>Dándote de baja...</h2></div></section>`;
+  let ok = false;
+  try { ok = await Cuenta.bajaConToken(token); } catch (err) { console.error(err); }
+  history.replaceState(null, "", location.pathname);
+  pantallaBajaLista(ok, true);
+}
+
+/* ============================================================ navegación */
+function irInicio(){ if (E.user) { (E.sel.length && E.perfil && E.perfil.activo) ? pantallaOfertas() : pantallaDestinos(); } else pantallaEntrar(); window.scrollTo(0,0); return false; }
+async function irDestinos(){ if (!E.user) return pantallaEntrar(); pantallaDestinos(); window.scrollTo(0,0); }
+async function salir(){ try { await Cuenta.salir(); } catch (e) {} E.user = null; E.perfil = null; E.sel = []; pantallaEntrar(); }
+
+async function iniciar(){
+  avisosTop();
+  const m = location.hash.match(/^#baja=([0-9a-f-]{36})$/i);
+  if (m) return pantallaBaja(m[1]);
+  try { E.user = await Cuenta.usuario(); } catch (e) { E.user = null; }
+  if (E.user) await despuesDeEntrar(); else pantallaEntrar();
+}
+iniciar();
+</script>
+</body>
+</html>

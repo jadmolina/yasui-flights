@@ -1,0 +1,52 @@
+name: Yasui Flights
+
+on:
+  schedule:
+    - cron: "23 */4 * * *"   # cada 4 horas (hora UTC)
+  workflow_dispatch:          # botón "Run workflow" para correrlo a mano
+
+permissions:
+  contents: write
+
+concurrency:
+  group: buscar-vuelos
+  cancel-in-progress: false
+
+jobs:
+  buscar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar
+        run: pip install -r requirements.txt
+
+      - name: Buscar vuelos
+        env:
+          TRAVELPAYOUTS_TOKEN: ${{ secrets.TRAVELPAYOUTS_TOKEN }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: python run.py
+
+      - name: Guardar resultados
+        run: |
+          git config user.name "buscador-de-vuelos"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data docs
+          if git diff --cached --quiet; then
+            echo "Sin cambios"
+          else
+            git commit -m "Ofertas actualizadas $(date -u +'%Y-%m-%d %H:%M') UTC"
+            git pull --rebase --autostash || true
+            git push
+          fi
