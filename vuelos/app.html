@@ -342,7 +342,7 @@ function pantallaEntrar(paso = "email", msg = ""){
     }) + `
     <section class="centro"><div class="panel">
       <h2>Entra con tu email</h2>
-      <p>No hace falta contraseña. Te mandamos un código de 6 números cada vez que entres.</p>
+      <p>No hace falta contraseña. Te mandamos un código nuevo cada vez que entres.</p>
       <form id="f-email" novalidate>
         <label class="campo" for="email">Tu email</label>
         <input class="txt" id="email" type="email" inputmode="email" autocomplete="email" placeholder="tu@email.com" value="${esc(E.email)}" required>
@@ -370,10 +370,10 @@ function pantallaEntrar(paso = "email", msg = ""){
   app.innerHTML = hero({ titulo: "Revisa tu email", sub: `Te mandamos un código a <b>${esc(E.email)}</b>.` }) + `
     <section class="centro"><div class="panel">
       <h2>Escribe el código</h2>
-      <p>Son 6 números. Se vence en unos minutos y sirve una sola vez.${PRUEBA ? " <b>(Modo prueba: 123456)</b>" : ""}</p>
+      <p>Es un código de números. Se vence en unos minutos y sirve una sola vez.${PRUEBA ? " <b>(Modo prueba: 123456)</b>" : ""}</p>
       <form id="f-codigo" novalidate>
         <label class="sr" for="codigo">Código</label>
-        <input class="txt codigo num" id="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]*" placeholder="······">
+        <input class="txt codigo num" id="codigo" inputmode="numeric" autocomplete="one-time-code" maxlength="10" pattern="[0-9]*" placeholder="········">
         <button class="btn pri full" id="b-entrar" type="submit">Entrar</button>
         <div class="error" id="err">${esc(msg)}</div>
       </form>
@@ -381,11 +381,12 @@ function pantallaEntrar(paso = "email", msg = ""){
       <p class="nota"><button class="link" id="b-reenviar" disabled>Reenviar código</button> &nbsp;·&nbsp; <button class="link" id="b-otro">Usar otro email</button></p>
     </div></section>`;
   const inp = $("#codigo");
-  inp.oninput = () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 6); if (inp.value.length === 6) $("#f-codigo").requestSubmit(); };
+  inp.oninput = () => { inp.value = inp.value.replace(/\D/g, "").slice(0, 10); };
+  inp.onpaste = () => setTimeout(() => { if (inp.value.length >= 6) $("#f-codigo").requestSubmit(); }, 30);
   $("#f-codigo").onsubmit = async ev => {
     ev.preventDefault();
     const codigo = inp.value.trim();
-    if (codigo.length !== 6) { $("#err").textContent = "El código tiene 6 números."; return; }
+    if (codigo.length < 6) { $("#err").textContent = "Escribe el código completo que te llegó por email."; return; }
     const b = $("#b-entrar"); b.disabled = true; b.textContent = "Entrando...";
     try { E.user = await Cuenta.verificar(E.email, codigo); await despuesDeEntrar(); }
     catch (err) { $("#err").textContent = traducirError(err); b.disabled = false; b.textContent = "Entrar"; inp.select(); }
