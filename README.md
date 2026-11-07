@@ -7,15 +7,18 @@ saliendo de **San Juan (SJU)** hacia esos lugares.
 ## Cómo funciona
 
 1. **Entrar:** la persona pone su email y le llega un código de 6 números, nuevo y al azar cada vez.
-2. **Escoger destinos:** ciudades (Tokio, Madrid...), países (Japón...), regiones (Europa, Hawaii...)
-   o "cualquier error de tarifa". Al guardar ve la pantalla de **¡Listo!**
+2. **Escoger destinos:** ciudades (Tokio, Madrid...), países (Japón...), regiones (Europa, Hawaii...),
+   "cualquier error de tarifa", o **"No tengo destino fijo"** (lo más barato a cualquier lugar desde SJU).
+   Al guardar ve la pantalla de **¡Listo!**
 3. **Cada 4 horas** GitHub corre el buscador:
    - **Aviasales (Travelpayouts):** lo más barato desde SJU a todos lados + cada destino que la gente escogió.
    - **Google Flights:** precios reales y confirma las ofertas.
    - **Secret Flying, The Flight Deal, Fly4free, r/flightdeals:** errores de tarifa publicados.
    - **Combinados:** ofertas que salen de ciudades de EE.UU. (Miami, Nueva York, Los Ángeles...)
      + lo que cuesta llegar desde SJU. Ej.: *SJU → Los Ángeles $289 + Los Ángeles → Osaka $262 = $551*
-     (directo desde SJU ~$1,080). Siempre avisa que son boletos separados.
+     (directo desde SJU ~$1,080). El vuelo SJU → ciudad puente tiene que salir 1-2 días antes y regresar
+     1-2 días después; si no hay un precio real para esas fechas (Aviasales o Google Flights), el combinado no sale.
+     Siempre avisa que son boletos separados, y si hay que cambiar de aeropuerto.
 4. **Emails:** cada persona recibe su propio email (nadie ve a los demás) desde yasuiflights@gmail.com,
    solo con lo de sus destinos. El primero es de bienvenida con los precios de hoy. No se repite la misma
    oferta en 14 días a menos que baje otro 10%. Cada email trae un link para darse de baja.

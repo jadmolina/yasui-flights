@@ -16,6 +16,7 @@ class Tarifa:
     salida: Optional[str] = None     # YYYY-MM-DD
     regreso: Optional[str] = None    # YYYY-MM-DD
     aerolinea: Optional[str] = None
+    aerolinea_iata: Optional[str] = None  # código (B6, WN, AA...) para el logo
     escalas: Optional[int] = None
     link: Optional[str] = None
     encontrado: Optional[str] = None # ISO

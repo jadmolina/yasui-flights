@@ -87,7 +87,8 @@ def tarifas_demo() -> List[Tarifa]:
     def puente(origen, dest, precio, sal, dur, al, esc):
         return Tarifa(fuente="travelpayouts", sitio="Aviasales", origen=origen, destino=dest, precio=precio,
                       salida=_d(sal), regreso=_d(sal + dur), aerolinea=al, escalas=esc, puente=True,
-                      link=f"https://www.aviasales.com/search/{origen}{dest}", encontrado=ya)
+                      link=f"https://www.aviasales.com/search/{origen}{dest}", encontrado=ya,
+                      extra={"aeropuerto_origen": {"LAX": "LAX", "SFO": "OAK"}.get(origen, origen)})
 
     def feed_puente(sitio, titulo, precio, origen_texto, destino_texto, error=False):
         return Tarifa(fuente="feed", sitio=sitio, origen="", origen_texto=origen_texto, destino="",
@@ -133,7 +134,7 @@ def personas_demo() -> List[dict]:
                       {"t": "r", "c": "hawaii", "n": "Hawaii"}]},
         {"id": "u3", "email": "yo@ejemplo.com", "nombre": "J", "bienvenida": True,
          "token_baja": "33333333-3333-4333-8333-333333333333",
-         "destinos": [{"t": "r", "c": "*", "n": "Cualquier error de tarifa"}]},
+         "destinos": [{"t": "r", "c": "todo", "n": "Cualquier destino"}]},
     ]
 
 
@@ -141,12 +142,12 @@ class TravelpayoutsDemo:
     """Simula lo que cuesta SJU -> ciudad puente para esas fechas."""
     PRECIOS = {"LAX": 289, "SFO": 318, "CHI": 236, "NYC": 160, "MIA": 120}
 
-    def precio_puente(self, ciudad, salida, regreso, dias_antes=1):
+    def precio_puente(self, ciudad, salida, regreso, dias_antes=1, margen=2):
         if ciudad not in self.PRECIOS or not salida:
             return None
         ida = (date.fromisoformat(salida) - timedelta(days=dias_antes)).isoformat()
         vuelta = (date.fromisoformat(regreso) + timedelta(days=dias_antes)).isoformat() if regreso else None
         t = Tarifa(fuente="travelpayouts", origen="SJU", destino=ciudad, precio=self.PRECIOS[ciudad],
-                   salida=ida, regreso=vuelta, aerolinea="AA")
+                   salida=ida, regreso=vuelta, aerolinea="AA", aeropuerto={"LAX": "LAX", "SFO": "SFO", "CHI": "ORD"}.get(ciudad))
         t.extra["exacto"] = True
         return t

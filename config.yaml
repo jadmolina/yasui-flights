@@ -85,20 +85,22 @@ combinados:
   activo: true
   ahorro_minimo: 0.25        # El combinado tiene que salir 25%+ más barato que ir directo desde SJU
   maximo_por_corrida: 20     # Cuántos combinados calcula con fechas exactas en cada corrida
-  dias_antes: 1              # Llegar a la ciudad puente 1 día antes (boletos separados)
+  dias_antes: 1              # Llegar a la ciudad puente 1 día antes y regresar 1 día después (boletos separados)
+  dias_margen: 2             # ...o hasta 2 días más temprano / más tarde si sale más barato
+  maximo_google: 8           # Si Aviasales no tiene el SJU -> puente para esas fechas, cuántos busca en Google
   puentes:
-    - { nombre: "Miami",           ciudad: MIA }
-    - { nombre: "Fort Lauderdale", ciudad: FLL }
-    - { nombre: "Orlando",         ciudad: ORL }
-    - { nombre: "Nueva York",      ciudad: NYC }
-    - { nombre: "Boston",          ciudad: BOS }
-    - { nombre: "Washington",      ciudad: WAS }
-    - { nombre: "Atlanta",         ciudad: ATL }
-    - { nombre: "Chicago",         ciudad: CHI }
-    - { nombre: "Dallas",          ciudad: DFW }
-    - { nombre: "Houston",         ciudad: HOU }
-    - { nombre: "Los Ángeles",     ciudad: LAX }
-    - { nombre: "San Francisco",   ciudad: SFO }
+    - { nombre: "Miami",           ciudad: MIA, aeropuerto: MIA }
+    - { nombre: "Fort Lauderdale", ciudad: FLL, aeropuerto: FLL }
+    - { nombre: "Orlando",         ciudad: ORL, aeropuerto: MCO }
+    - { nombre: "Nueva York",      ciudad: NYC, aeropuerto: JFK }
+    - { nombre: "Boston",          ciudad: BOS, aeropuerto: BOS }
+    - { nombre: "Washington",      ciudad: WAS, aeropuerto: IAD }
+    - { nombre: "Atlanta",         ciudad: ATL, aeropuerto: ATL }
+    - { nombre: "Chicago",         ciudad: CHI, aeropuerto: ORD }
+    - { nombre: "Dallas",          ciudad: DFW, aeropuerto: DFW }
+    - { nombre: "Houston",         ciudad: HOU, aeropuerto: IAH }
+    - { nombre: "Los Ángeles",     ciudad: LAX, aeropuerto: LAX }
+    - { nombre: "San Francisco",   ciudad: SFO, aeropuerto: SFO }
 
 google_flights:
   activo: true

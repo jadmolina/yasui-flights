@@ -155,6 +155,28 @@ class Lugares:
             return leer_json(ruta, [])
 
     # -------------------------------------------------------------- búsquedas
+    def iata_aerolinea(self, nombre: Optional[str]) -> Optional[str]:
+        """'JetBlue' -> 'B6' (para el logo). Si ya es un código, lo devuelve igual."""
+        if not nombre:
+            return None
+        nombre = nombre.split(",")[0].strip()
+        if len(nombre) == 2 and nombre.upper() == nombre:
+            return nombre
+        def limpia(n: str) -> str:
+            n = _normal(n)
+            for sufijo in (" airlines", " air lines", " airways", " airline", " aviation", " air"):
+                if n.endswith(sufijo):
+                    n = n[: -len(sufijo)]
+            return n.strip()
+
+        if not getattr(self, "_por_nombre_aerolinea", None):
+            self._por_nombre_aerolinea = {}
+            for codigo, n in self.aerolineas.items():
+                if n and len(codigo) == 2:
+                    self._por_nombre_aerolinea.setdefault(_normal(n), codigo)
+                    self._por_nombre_aerolinea.setdefault(limpia(n), codigo)
+        return self._por_nombre_aerolinea.get(_normal(nombre)) or self._por_nombre_aerolinea.get(limpia(nombre))
+
     def nombre_aerolinea(self, codigo: Optional[str]) -> Optional[str]:
         if not codigo:
             return None
@@ -222,8 +244,11 @@ class Lugares:
             t.region = region_de(t.pais)
         if not t.aeropuerto and t.destino in self.aeropuertos:
             t.aeropuerto = t.destino
-        if t.aerolinea and len(t.aerolinea) <= 3:
+        if t.aerolinea and len(t.aerolinea) == 2 and t.aerolinea.upper() == t.aerolinea:
+            t.aerolinea_iata = t.aerolinea_iata or t.aerolinea
             t.aerolinea = self.nombre_aerolinea(t.aerolinea)
+        elif t.aerolinea and not t.aerolinea_iata:
+            t.aerolinea_iata = self.iata_aerolinea(t.aerolinea)
         return t
 
 
@@ -240,6 +265,7 @@ class Lugares:
         for codigo, nombre in REGIONES.items():
             if codigo != "otros":
                 filas.append([codigo, nombre, "", "", "r"])
+        filas.append(["todo", "Cualquier destino (lo más barato desde SJU)", "", "", "r"])
         filas.append(["*", "Cualquier error de tarifa (a donde sea)", "", "", "r"])
         for codigo in sorted(self.paises):
             if codigo == "PR":

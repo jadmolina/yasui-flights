@@ -19,7 +19,7 @@ from .sources.google_flights import link_google
 from .util import DATA, ahora_iso, guardar_json, horas_desde, hoy_pr, leer_json
 
 NIVELES = {3: "Posible error de tarifa", 2: "Ganga", 1: "Oferta"}
-VERSION_REGLAS = 2  # si cambian las reglas, las ofertas viejas se descartan en vez de arrastrarse
+VERSION_REGLAS = 3  # si cambian las reglas, las ofertas viejas se descartan en vez de arrastrarse
 
 ARCH_HISTORIAL = DATA / "historial.json"
 ARCH_OFERTAS = DATA / "ofertas.json"
@@ -28,14 +28,16 @@ ARCH_AVISADOS = DATA / "avisados.json"
 
 def coincide(o: dict, destinos: list) -> bool:
     """¿Esta oferta le interesa a alguien que escogió estos destinos?
-    destinos: [{"t": "c"|"p"|"r", "c": código}]  c=ciudad, p=país, r=región ('*' = cualquier error de tarifa)."""
+    destinos: [{"t": "c"|"p"|"r", "c": código}]  c=ciudad, p=país, r=región
+    ('*' = cualquier error de tarifa, 'todo' = lo más barato a cualquier destino)."""
     for d in destinos or []:
         tipo, codigo = d.get("t"), d.get("c")
         if tipo == "c" and codigo in (o.get("destino"), o.get("aeropuerto")):
             return True
         if tipo == "p" and codigo == o.get("pais"):
             return True
-        if tipo == "r" and (codigo == o.get("region") or (codigo == "*" and (o.get("nivel") or 0) >= 3)):
+        if tipo == "r" and (codigo == o.get("region") or codigo == "todo"
+                            or (codigo == "*" and (o.get("nivel") or 0) >= 3)):
             return True
     return False
 
@@ -299,7 +301,8 @@ class Detector:
             if actual is None or t.precio < actual["precio"]:
                 mapa[t.destino] = {
                     "precio": t.precio, "fecha": self.hoy, "salida": t.salida, "regreso": t.regreso,
-                    "aerolinea": t.aerolinea, "nombre": t.destino_nombre, "pais": t.pais, "region": t.region,
+                    "aerolinea": t.aerolinea, "aerolinea_iata": t.aerolinea_iata,
+                    "nombre": t.destino_nombre, "pais": t.pais, "region": t.region,
                     "link": link_google(t.origen, t.aeropuerto or t.destino, t.salida, t.regreso),
                 }
         for clave, serie in self.historial.items():

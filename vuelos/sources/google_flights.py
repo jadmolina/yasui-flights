@@ -52,13 +52,14 @@ class GoogleFlights:
         self.bloqueado = False
 
     # -------------------------------------------------------------- básico
-    def precio(self, destino: str, salida: str, regreso: Optional[str]) -> Optional[dict]:
+    def precio(self, destino: str, salida: str, regreso: Optional[str], origen: Optional[str] = None) -> Optional[dict]:
         """Precio más barato en Google Flights para esas fechas, o None."""
         if not DISPONIBLE or self.bloqueado:
             return None
-        vuelos = [FlightQuery(date=salida, from_airport=self.origen, to_airport=destino)]
+        origen = origen or self.origen
+        vuelos = [FlightQuery(date=salida, from_airport=origen, to_airport=destino)]
         if regreso:
-            vuelos.append(FlightQuery(date=regreso, from_airport=destino, to_airport=self.origen))
+            vuelos.append(FlightQuery(date=regreso, from_airport=destino, to_airport=origen))
         q = create_query(
             flights=vuelos,
             trip="round-trip" if regreso else "one-way",

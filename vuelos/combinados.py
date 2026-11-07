@@ -9,6 +9,7 @@ total sale bastante más barato que ir directo desde SJU, lo presentamos como of
 from __future__ import annotations
 
 import hashlib
+from datetime import date, timedelta
 from typing import Callable, Dict, List, Optional
 
 from .detector import NIVELES, Detector
@@ -19,14 +20,16 @@ from .util import log
 
 
 class Combinador:
-    def __init__(self, config: dict, detector: Detector, lugares: Lugares, tp=None):
+    def __init__(self, config: dict, detector: Detector, lugares: Lugares, tp=None, gf=None):
         self.config = config
         self.conf = config.get("combinados", {})
         self.det = detector
         self.lugares = lugares
         self.tp = tp  # Travelpayouts (para buscar el SJU -> puente con fechas). Puede ser None.
+        self.gf = gf  # Google Flights (respaldo con fechas exactas). Puede ser None.
         self.origen = config.get("origen", "SJU")
         self.nombres_puente = {p["ciudad"]: p["nombre"] for p in self.conf.get("puentes", [])}
+        self.aeropuertos_puente = {p["ciudad"]: p.get("aeropuerto") or p["ciudad"] for p in self.conf.get("puentes", [])}
 
     def _nombre(self, codigo: str) -> str:
         if codigo in self.nombres_puente:
@@ -40,6 +43,8 @@ class Combinador:
         ahorro_min = float(self.conf.get("ahorro_minimo", 0.25))
         maximo = int(self.conf.get("maximo_por_corrida", 20))
         dias_antes = int(self.conf.get("dias_antes", 1))
+        margen = int(self.conf.get("dias_margen", 2))
+        max_google = int(self.conf.get("maximo_google", 8))
         f_err = float(self.det.reglas.get("factor_error", 0.6))
 
         # Lo más barato directo desde SJU a cada lugar (hoy)
@@ -72,20 +77,43 @@ class Combinador:
 
         candidatos.sort(key=lambda c: c[0])
         ofertas: Dict[str, dict] = {}
-        exactos = 0
+        exactos = google = sin_fechas = 0
         for _, t, llegar, ref, meta in candidatos:
-            puente = None
-            if self.tp is not None and t.salida and exactos < maximo:
+            ap_tramo = (t.extra or {}).get("aeropuerto_origen") or self.aeropuertos_puente.get(t.origen) or t.origen
+            p_precio = p_salida = p_regreso = p_aerolinea = p_aeropuerto = p_iata = None
+            exacto = False
+            if t.salida:
+                # El vuelo largo tiene fechas: el SJU -> puente TIENE que cuadrar con ellas.
+                if exactos >= maximo:
+                    continue
                 exactos += 1
-                try:
-                    puente = self.tp.precio_puente(t.origen, t.salida, t.regreso, dias_antes)
-                except Exception:  # noqa: BLE001
-                    puente = None
-            if puente is not None and puente.precio > 0:
-                p_precio, exacto = puente.precio, bool(puente.extra.get("exacto"))
-                p_salida, p_regreso, p_aerolinea = puente.salida, puente.regreso, self.lugares.nombre_aerolinea(puente.aerolinea)
+                puente = None
+                if self.tp is not None:
+                    try:
+                        puente = self.tp.precio_puente(t.origen, t.salida, t.regreso, dias_antes, margen)
+                    except Exception:  # noqa: BLE001
+                        puente = None
+                if puente is not None and puente.precio > 0:
+                    p_precio, p_salida, p_regreso = puente.precio, puente.salida, puente.regreso
+                    p_aerolinea = self.lugares.nombre_aerolinea(puente.aerolinea)
+                    p_iata = puente.aerolinea if puente.aerolinea and len(puente.aerolinea) == 2 else None
+                    p_aeropuerto = puente.aeropuerto
+                    exacto = True
+                elif self.gf is not None and not getattr(self.gf, "bloqueado", False) and google < max_google:
+                    google += 1
+                    ida = (date.fromisoformat(t.salida) - timedelta(days=dias_antes)).isoformat()
+                    vuelta = (date.fromisoformat(t.regreso) + timedelta(days=dias_antes)).isoformat() if t.regreso else None
+                    res = self.gf.precio(ap_tramo, ida, vuelta, origen=self.origen)
+                    if res:
+                        p_precio, p_salida, p_regreso = res["precio"], ida, vuelta
+                        p_aerolinea, p_aeropuerto, exacto = res.get("aerolinea"), ap_tramo, True
+                        p_iata = self.lugares.iata_aerolinea(p_aerolinea)
+                if p_precio is None:
+                    sin_fechas += 1
+                    continue  # no hay precio real para esas fechas: mejor no enseñarlo
             else:
-                p_precio, exacto, p_salida, p_regreso, p_aerolinea = llegar, False, None, None, None
+                # Post sin fechas (feeds): solo podemos dar el precio típico SJU -> puente
+                p_precio = llegar
             total = t.precio + p_precio
             o = self._evaluar(t, total, ref, meta, ahorro_min, f_err)
             if not o:
@@ -94,14 +122,17 @@ class Combinador:
             o.update({
                 "tramo": {
                     "origen": t.origen, "origen_nombre": nombre_puente, "precio": t.precio,
+                    "aeropuerto_origen": (t.extra or {}).get("aeropuerto_origen") if t.salida else None,
                     "salida": t.salida, "regreso": t.regreso, "aerolinea": t.aerolinea, "escalas": t.escalas,
+                    "aerolinea_iata": t.aerolinea_iata,
                     "link": t.link or link_google(t.origen, t.aeropuerto or t.destino, t.salida, t.regreso),
                     "sitio": t.sitio, "titulo": t.titulo,
                 },
                 "puente": {
                     "ciudad": t.origen, "nombre": nombre_puente, "precio": p_precio, "exacto": exacto,
                     "salida": p_salida, "regreso": p_regreso, "aerolinea": p_aerolinea,
-                    "link": link_google(self.origen, t.origen, p_salida, p_regreso),
+                    "aerolinea_iata": p_iata, "aeropuerto": p_aeropuerto,
+                    "link": link_google(self.origen, p_aeropuerto or t.origen, p_salida, p_regreso),
                 },
             })
             clave = f"{t.origen}:{t.destino}:{(t.salida or '')[:7]}"
@@ -109,7 +140,8 @@ class Combinador:
                 ofertas[clave] = o
         lista = list(ofertas.values())
         if candidatos:
-            log(f"  Combinados: {len(lista)} ofertas ({len(candidatos)} candidatos, {exactos} con fechas exactas)")
+            log(f"  Combinados: {len(lista)} ofertas ({len(candidatos)} candidatos; {google} revisados en Google; "
+                f"{sin_fechas} descartados porque el vuelo desde SJU no cuadraba con las fechas)")
         return lista
 
     # ------------------------------------------------------------------
@@ -154,7 +186,8 @@ class Combinador:
             "origen": self.origen, "destino": t.destino, "destino_nombre": t.destino_nombre,
             "pais": t.pais, "pais_nombre": t.pais_nombre, "region": t.region, "aeropuerto": t.aeropuerto,
             "precio": round(total), "ida_y_vuelta": True, "salida": t.salida, "regreso": t.regreso,
-            "aerolinea": t.aerolinea, "escalas": t.escalas, "titulo": t.titulo, "es_error": t.es_error,
+            "aerolinea": t.aerolinea, "aerolinea_iata": t.aerolinea_iata, "escalas": t.escalas,
+            "titulo": t.titulo, "es_error": t.es_error,
             "encontrado": t.encontrado, "link": t.link,
             "nivel": nivel, "nivel_nombre": NIVELES[nivel], "motivos": motivos,
             "meta": meta, "mediana": ref, "descuento": ahorro, "directo": ref,

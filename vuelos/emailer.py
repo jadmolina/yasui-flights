@@ -15,7 +15,9 @@ from typing import Dict, List, Optional
 from .lugares import REGIONES
 
 MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
-NARANJA, VERDE_AGUA, AZUL, TINTA, GRIS, LINEA = "#f26b3a", "#0f8a7a", "#5b6cff", "#14202b", "#5d6b78", "#ece7dc"
+# Paleta de Yasui Flights (verde bosque, khaki y marrón)
+NARANJA, VERDE_AGUA, AZUL, TINTA, GRIS, LINEA = "#8A6240", "#4C6444", "#4D2D18", "#102820", "#5F6A5E", "#E0D5C1"
+FONDO, PANEL, KHAKI, KHAKI_SUAVE, AVISO = "#F3EDE2", "#FBF8F2", "#CABA9C", "#EAE1D0", "#8A4B1F"
 e = html.escape
 
 
@@ -81,7 +83,7 @@ def _boton(texto: str, url: str, primario: bool = True) -> str:
     if primario:
         estilo = f"background:{TINTA};color:#fff;border:1px solid {TINTA}"
     else:
-        estilo = f"background:#fff;color:{TINTA};border:1px solid #d5cfc2"
+        estilo = f"background:{PANEL};color:{TINTA};border:1px solid {KHAKI}"
     return (f"<a href='{e(url)}' style='display:inline-block;{estilo};text-decoration:none;padding:8px 12px;"
             f"border-radius:8px;font-size:13px;font-weight:600;margin:8px 6px 0 0'>{e(texto)}</a>")
 
@@ -101,14 +103,14 @@ def _fila_directa(o: dict) -> str:
     if o.get("mediana"):
         normal = f"Normal ~{_dinero(o['mediana'])}"
         if o.get("descuento") and o["descuento"] > 0:
-            normal += f" · <b style='color:#1d8a4e'>{o['descuento']:.0%} menos</b>"
+            normal += f" · <b style='color:#4C6444'>{o['descuento']:.0%} menos</b>"
     elif o.get("meta"):
         normal = f"Precio meta: {_dinero(o.get('meta'))}"
     escalas = None if o.get("escalas") is None else ("directo" if o["escalas"] == 0 else f"{o['escalas']} escala(s)")
     vuelo = " · ".join(x for x in [o.get("aerolinea"), escalas] if x)
     verif = ""
     if o.get("verificado") is True and o.get("fuente") != "google":
-        verif = f"<div style='font-size:12px;color:#1d8a4e;margin-top:4px'>Confirmado en Google Flights: {_dinero(o.get('precio_google'))}</div>"
+        verif = f"<div style='font-size:12px;color:#4C6444;margin-top:4px'>Confirmado en Google Flights: {_dinero(o.get('precio_google'))}</div>"
     botones = _boton("Google Flights", o["link_google"])
     if o.get("link") and o.get("fuente") != "google":
         botones += _boton("Ver post" if o["fuente"] == "feed" else "Aviasales", o["link"], primario=False)
@@ -130,14 +132,36 @@ def _fila_directa(o: dict) -> str:
 def _fila_combinado(o: dict) -> str:
     color = _color(o)
     p, t = o["puente"], o["tramo"]
+    ciudad, dest = p["nombre"], o["destino_nombre"]
     aprox = "" if p.get("exacto") else " aprox."
     ahorro = ""
     if o.get("directo"):
         ahorro = f"Normal desde SJU ~{_dinero(o['directo'])}"
         if o.get("descuento") and o["descuento"] > 0:
-            ahorro += f" · <b style='color:#1d8a4e'>{o['descuento']:.0%} menos</b>"
-    paso = "font-size:13px;color:%s;margin-top:4px;padding:8px 10px;background:#f6f4ef;border-radius:8px" % TINTA
-    fechas_p = f" · {_fechas(p.get('salida'), p.get('regreso'))}" if p.get("salida") else " · según tus fechas"
+            ahorro += f" · <b style='color:#4C6444'>{o['descuento']:.0%} menos</b>"
+
+    alguna_fecha = bool(p.get("salida") or t.get("salida"))
+
+    def fila(fecha, desde, hasta):
+        celda_fecha = (f"<td style='padding:2px 10px 2px 0;font-size:13px;color:{GRIS};white-space:nowrap;width:60px'>"
+                       f"{e(_f(fecha)) if fecha else '—'}</td>") if alguna_fecha else ""
+        return f"<tr>{celda_fecha}<td style='padding:2px 0;font-size:14px;color:{TINTA}'>{e(desde)} → {e(hasta)}</td></tr>"
+
+    def titulo_seccion(txt):
+        return (f"<tr><td colspan='2' style='padding:6px 0 2px;font-size:11px;font-weight:700;letter-spacing:.07em;"
+                f"text-transform:uppercase;color:{GRIS}'>{txt}</td></tr>")
+
+    itinerario = (titulo_seccion("Ida") + fila(p.get("salida"), "SJU", ciudad) + fila(t.get("salida"), ciudad, dest)
+                  + titulo_seccion("Vuelta") + fila(t.get("regreso"), dest, ciudad) + fila(p.get("regreso"), ciudad, "SJU"))
+    nota = ""
+    if not (p.get("salida") and t.get("salida")):
+        nota = (f"<div style='font-size:12px;color:{GRIS};margin-top:4px'>"
+                f"{'' if t.get('salida') else 'Las fechas del vuelo a ' + e(dest) + ' están en el post. '}"
+                f"El precio SJU ⇄ {e(ciudad)} es el típico; depende de las fechas que escojas.</div>")
+    cambio = (f"Llegas a {p['aeropuerto']} y el vuelo a {dest} sale de {t['aeropuerto_origen']} (otro aeropuerto). "
+              if p.get("aeropuerto") and t.get("aeropuerto_origen") and p["aeropuerto"] != t["aeropuerto_origen"] else "")
+    bol = "font-size:13px;color:%s;padding:3px 0;border-bottom:1px dashed %s" % (TINTA, LINEA)
+    aer_t = " · ".join(x for x in [t.get("aerolinea"), t.get("sitio")] if x)
     return f"""
 <tr><td style="padding:14px 16px;border-bottom:1px solid {LINEA}">
   <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:{color}">Combinado · {e(o['nivel_nombre'])} · {e(REGIONES.get(o.get('region') or '', ''))}</div>
@@ -145,12 +169,16 @@ def _fila_combinado(o: dict) -> str:
   <div style="margin-top:4px"><span style="font-size:28px;font-weight:800;color:{color}">{_dinero(o['precio'])}</span>
      <span style="font-size:13px;color:{GRIS}"> total{aprox} ida y vuelta</span></div>
   <div style="font-size:13px;color:{GRIS}">{ahorro}</div>
-  <div style="{paso}"><b>1.</b> SJU → {e(p['nombre'])}: <b>{'~' if not p.get('exacto') else ''}{_dinero(p['precio'])}</b>{e(fechas_p)}{(' · ' + e(p['aerolinea'])) if p.get('aerolinea') else ''}</div>
-  <div style="{paso}"><b>2.</b> {e(p['nombre'])} → {e(o['destino_nombre'])}: <b>{_dinero(t['precio'])}</b> · {e(_fechas(t.get('salida'), t.get('regreso')))}{(' · ' + e(t['aerolinea'])) if t.get('aerolinea') else ''}</div>
+  <div style="background:{KHAKI_SUAVE};border-radius:10px;padding:6px 10px 8px;margin-top:6px">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%">{itinerario}</table>{nota}
+  </div>
+  <div style="font-size:12px;color:{GRIS};margin-top:8px">Son 2 boletos separados:</div>
+  <div style="{bol}">SJU ⇄ {e(ciudad)}: <b>{'' if p.get('exacto') else '~'}{_dinero(p['precio'])}</b>{(' · ' + e(p['aerolinea'])) if p.get('aerolinea') else ''}</div>
+  <div style="{bol}">{e(ciudad)} ⇄ {e(dest)}: <b>{_dinero(t['precio'])}</b>{(' · ' + e(aer_t)) if aer_t else ''}</div>
   {f"<div style='font-size:12px;color:{GRIS};font-style:italic;margin-top:4px'>{e(t['titulo'])}</div>" if t.get('titulo') else ''}
-  <div style="font-size:12px;color:#b4560f;margin-top:6px">Ojo: son boletos separados. Llega a {e(p['nombre'])} un día antes y regresa un día después, por si algún vuelo se atrasa.</div>
+  <div style="font-size:12px;color:{AVISO};margin-top:6px">{e(cambio)}Si un vuelo se atrasa, la otra aerolínea no te espera: por eso llegas un día antes.</div>
   <div style="font-size:12px;color:{GRIS};margin-top:4px">{e(' · '.join(o.get('motivos') or []))}</div>
-  {_boton('Vuelo a ' + p['nombre'], p['link'])}{_boton('Vuelo a ' + o['destino_nombre'], t['link'], primario=False)}
+  {_boton('Boleto SJU ⇄ ' + ciudad, p['link'])}{_boton('Boleto ' + ciudad + ' ⇄ ' + dest, t['link'], primario=False)}
 </td></tr>"""
 
 
@@ -159,12 +187,12 @@ def _fila(o: dict) -> str:
 
 
 def _plantilla(titulo: str, intro_html: str, filas_html: str, pie_html: str) -> str:
-    return f"""<!doctype html><html><body style="margin:0;background:#f6f4ef;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6f4ef"><tr><td align="center" style="padding:20px 10px">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;border:1px solid #e3ded3">
-<tr><td style="background:#0f2a43;color:#fff;padding:18px 16px">
-  <div style="font:600 12px monospace;letter-spacing:.12em;color:#ffb796">YASUI FLIGHTS · SJU → A DONDE SEA</div>
-  <div style="font-size:20px;font-weight:750;margin-top:4px">{e(titulo)}</div>
+    return f"""<!doctype html><html><body style="margin:0;background:{FONDO};font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{FONDO}"><tr><td align="center" style="padding:20px 10px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:{PANEL};border-radius:16px;overflow:hidden;border:1px solid {LINEA}">
+<tr><td style="background:{TINTA};color:#EDE3CF;padding:20px 16px">
+  <div style="font:600 12px monospace;letter-spacing:.12em;color:{KHAKI}">YASUI FLIGHTS · SJU → A DONDE SEA</div>
+  <div style="font-size:22px;font-weight:700;margin-top:6px;font-family:Georgia,'Times New Roman',serif">{e(titulo)}</div>
 </td></tr>
 {intro_html}
 {filas_html}
@@ -253,10 +281,12 @@ def cuerpo_texto(ofertas: List[dict], url_sitio: str = "", persona: Optional[dic
         tipo = "ida y vuelta" if o["ida_y_vuelta"] else "solo ida"
         if o.get("tipo") == "combinado":
             p, t = o["puente"], o["tramo"]
-            lineas.append(f"[Combinado · {o['nivel_nombre']}] {o['destino_nombre']}: {_dinero(o['precio'])} total {tipo}")
-            lineas.append(f"   1. SJU -> {p['nombre']}: {'~' if not p.get('exacto') else ''}{_dinero(p['precio'])}  {p['link']}")
-            lineas.append(f"   2. {p['nombre']} -> {o['destino_nombre']}: {_dinero(t['precio'])} {_fechas(t.get('salida'), t.get('regreso'))}  {t['link']}")
-            lineas.append("   Ojo: boletos separados, llega un día antes.")
+            c, d = p["nombre"], o["destino_nombre"]
+            lineas.append(f"[Combinado · {o['nivel_nombre']}] {d}: {_dinero(o['precio'])} total {tipo}")
+            lineas.append(f"   Ida:    {_f(p.get('salida')) or '—'} SJU -> {c} | {_f(t.get('salida')) or '—'} {c} -> {d}")
+            lineas.append(f"   Vuelta: {_f(t.get('regreso')) or '—'} {d} -> {c} | {_f(p.get('regreso')) or '—'} {c} -> SJU")
+            lineas.append(f"   Boleto SJU <-> {c}: {'~' if not p.get('exacto') else ''}{_dinero(p['precio'])}  {p['link']}")
+            lineas.append(f"   Boleto {c} <-> {d}: {_dinero(t['precio'])}  {t['link']}")
         else:
             lineas.append(f"[{o['nivel_nombre']}] {o['destino_nombre']}: {_dinero(o['precio'])} {tipo} "
                           f"{_fechas(o.get('salida'), o.get('regreso'))}")

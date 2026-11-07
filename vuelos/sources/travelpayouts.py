@@ -140,20 +140,47 @@ class Travelpayouts:
         log(f"  Travelpayouts (ciudades puente): {len(tarifas)} precios ({self.llamadas - antes} llamadas)")
         return tarifas
 
-    def precio_puente(self, ciudad: str, salida: Optional[str], regreso: Optional[str], dias_antes: int = 1) -> Optional[Tarifa]:
-        """Lo más barato SJU -> ciudad puente para llegar antes del vuelo y volver después.
-        Primero prueba las fechas exactas; si no hay datos, el mes."""
-        intentos = []
-        if salida:
-            ida = (date.fromisoformat(salida) - timedelta(days=dias_antes)).isoformat()
-            vuelta = (date.fromisoformat(regreso) + timedelta(days=dias_antes)).isoformat() if regreso else None
-            intentos.append((ida, vuelta, True))
-            intentos.append((ida[:7], vuelta[:7] if vuelta else None, False))
-        for ida, vuelta, exacto in intentos:
-            filas = self._get(destination=ciudad, departure_at=ida, return_at=vuelta,
-                              one_way="false" if vuelta else "true", limit=5)
-            if filas:
-                t = self._convertir(sorted(filas, key=lambda f: f.get("price") or 1e9)[0], bool(vuelta))
-                t.extra["exacto"] = exacto
-                return t
-        return None
+    def precio_puente(self, ciudad: str, salida: Optional[str], regreso: Optional[str],
+                      dias_antes: int = 1, margen: int = 2) -> Optional[Tarifa]:
+        """Lo más barato SJU -> ciudad puente que CUADRE con el otro vuelo:
+        salir entre (salida - dias_antes - margen) y (salida - dias_antes),
+        y regresar entre (regreso + dias_antes) y (regreso + dias_antes + margen).
+        Si Aviasales no tiene nada que cuadre, devuelve None (no se inventa un precio)."""
+        if not salida:
+            return None
+        d = date.fromisoformat(salida)
+        r = date.fromisoformat(regreso) if regreso else None
+        ida_max = d - timedelta(days=dias_antes)
+        ida_min = ida_max - timedelta(days=margen)
+        vuelta_min = r + timedelta(days=dias_antes) if r else None
+        vuelta_max = vuelta_min + timedelta(days=margen) if vuelta_min else None
+
+        def cuadra(f: dict) -> bool:
+            try:
+                ida = date.fromisoformat((f.get("departure_at") or "")[:10])
+            except ValueError:
+                return False
+            if not (ida_min <= ida <= ida_max):
+                return False
+            if not r:
+                return True
+            try:
+                vuelta = date.fromisoformat((f.get("return_at") or "")[:10])
+            except ValueError:
+                return False
+            return vuelta_min <= vuelta <= vuelta_max
+
+        rt = "false" if r else "true"
+        # 1) fechas exactas (un día antes / un día después)
+        filas = self._get(destination=ciudad, departure_at=ida_max.isoformat(),
+                          return_at=vuelta_min.isoformat() if vuelta_min else None, one_way=rt, limit=10)
+        buenas = [f for f in filas if cuadra(f)]
+        # 2) todo el mes (o los dos meses) y nos quedamos con lo que cuadre
+        if not buenas:
+            for mes in sorted({ida_min.strftime("%Y-%m"), ida_max.strftime("%Y-%m")}):
+                buenas += [f for f in self._get(destination=ciudad, departure_at=mes, one_way=rt, limit=1000) if cuadra(f)]
+        if not buenas:
+            return None
+        t = self._convertir(min(buenas, key=lambda f: f.get("price") or 1e9), bool(r))
+        t.extra["exacto"] = True
+        return t

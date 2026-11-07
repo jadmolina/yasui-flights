@@ -230,7 +230,7 @@ def main() -> int:
                          "nivel": 3 if t.es_error else 0}, intereses)
 
     try:
-        ofertas += Combinador(config, det, lugares, tp).construir(tarifas, quiere)
+        ofertas += Combinador(config, det, lugares, tp, gf).construir(tarifas, quiere)
     except Exception as e:  # noqa: BLE001
         aviso(f"Los combinados fallaron: {e}")
     ofertas = det.combinar(ofertas)
