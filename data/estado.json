@@ -1,14 +1,14 @@
 {
- "ultima_corrida": "2026-11-06T02:39:46+00:00",
- "segundos": 103,
- "tarifas": 3002,
- "ofertas": 33,
+ "ultima_corrida": "2026-11-07T00:10:03+00:00",
+ "segundos": 129,
+ "tarifas": 3053,
+ "ofertas": 14,
  "personas": 0,
  "fuentes": [
   {
    "nombre": "Aviasales",
    "ok": true,
-   "n": 2978,
+   "n": 3032,
    "detalle": ""
   },
   {
@@ -44,8 +44,8 @@
   {
    "nombre": "Google Flights",
    "ok": true,
-   "n": 18,
-   "detalle": "YUL 2027-06-03: TypeError: 'NoneType' object is not subscriptable"
+   "n": 25,
+   "detalle": "OGG 2027-02-09: TypeError: 'NoneType' object is not subscriptable; HNL 2027-07-26: TypeError: 'NoneType' object is not subscriptable"
   }
  ]
 }
