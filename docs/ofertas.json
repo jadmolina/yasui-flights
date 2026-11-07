@@ -6,7 +6,7 @@
   "remitente": "yasuiflights@gmail.com"
  },
  "origen": "SJU",
- "generado": "2026-11-07T20:20:30+00:00",
+ "generado": "2026-11-07T23:44:06+00:00",
  "hoy": "2026-11-07",
  "demo": false,
  "fuentes": [
@@ -49,7 +49,7 @@
   {
    "nombre": "Google Flights",
    "ok": true,
-   "n": 33,
+   "n": 32,
    "detalle": "JFK 2027-01-05: TypeError: 'NoneType' object is not subscriptable; BQN 2026-12-08: TypeError: 'NoneType' object is not subscriptable"
   }
  ],
@@ -154,7 +154,7 @@
    "aerolinea_iata": "F9",
    "escalas": 0,
    "link": "https://www.aviasales.com/search/SJU1212PUJ19121?t=F917970789001797082800000065SJUPUJ17977077001797711480000063PUJSJU_83822322b4731d51a93fd3209cd37863_16312&search_date=04112026&expected_price_uuid=01a1a64a-d023-8040-ac7f-eba61390886b&static_fare_key=TY%7CP0%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=x6oqYvukrsIA_KjKz634-w&expected_price_source=share&expected_price_currency=usd&expected_price=199",
-   "encontrado": "2026-11-07T20:20:32+00:00",
+   "encontrado": "2026-11-07T23:44:07+00:00",
    "sitio": "Aviasales",
    "titulo": null,
    "es_error": false,
@@ -180,11 +180,11 @@
    "verificado": true,
    "precio_google": 211.0,
    "primera_vez": "2026-11-07T20:20:30+00:00",
-   "ultima_vez": "2026-11-07T20:20:30+00:00",
+   "ultima_vez": "2026-11-07T23:44:06+00:00",
    "link_google": "https://www.google.com/travel/flights?q=Flights%20to%20PUJ%20from%20SJU%20on%202026-12-12%20through%202026-12-19&hl=es&curr=USD",
    "centavos_milla": null,
-   "v": 3,
-   "verificado_en": "2026-11-07T20:22:55+00:00"
+   "verificado_en": "2026-11-07T20:22:55+00:00",
+   "v": 3
   },
   {
    "fuente": "travelpayouts",
@@ -242,7 +242,7 @@
    "aerolinea_iata": "F9",
    "escalas": 2,
    "link": "https://www.aviasales.com/search/SJU0812BQN18121?t=F917967060601796784720001311SJUATLMCOBQN17976050401797639420000573BQNMCOSJU_dc9aa3024cdcf300d6eb5961c1fb132f_37825&search_date=02112026&expected_price_uuid=01a19e99-4abb-8040-2c95-a61cb55699be&static_fare_key=TY%7CP0%7CH0%7CL0%7CCH0%7CR0%7CTBC0&itinerary_key=gb-r47ZTECi7jwpSpZTOaA&expected_price_source=share&expected_price_currency=usd&expected_price=466",
-   "encontrado": "2026-11-07T20:20:32+00:00",
+   "encontrado": "2026-11-07T23:44:07+00:00",
    "sitio": "Aviasales",
    "titulo": null,
    "es_error": false,
@@ -268,7 +268,7 @@
    "verificado": null,
    "precio_google": null,
    "primera_vez": "2026-11-06T02:21:41+00:00",
-   "ultima_vez": "2026-11-07T20:20:30+00:00",
+   "ultima_vez": "2026-11-07T23:44:06+00:00",
    "link_google": "https://www.google.com/travel/flights?q=Flights%20to%20BQN%20from%20SJU%20on%202026-12-08%20through%202026-12-18&hl=es&curr=USD",
    "centavos_milla": null,
    "v": 3
@@ -403,6 +403,19 @@
    "pais": "DO",
    "region": "caribe",
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20PUJ%20from%20SJU%20on%202027-06-07%20through%202027-06-14&hl=es&curr=USD",
+   "mediana": null
+  },
+  "PIT": {
+   "precio": 236.0,
+   "fecha": "2026-11-07",
+   "salida": "2026-11-13",
+   "regreso": "2026-11-22",
+   "aerolinea": "Southwest Airlines",
+   "aerolinea_iata": "WN",
+   "nombre": "Pittsburgh",
+   "pais": "US",
+   "region": "usa",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20PIT%20from%20SJU%20on%202026-11-13%20through%202026-11-22&hl=es&curr=USD",
    "mediana": null
   },
   "TPA": {
@@ -574,19 +587,6 @@
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20PHX%20from%20SJU%20on%202027-02-25%20through%202027-02-27&hl=es&curr=USD",
    "mediana": null
   },
-  "MEX": {
-   "precio": 665.0,
-   "fecha": "2026-11-07",
-   "salida": "2026-11-07",
-   "regreso": "2026-11-14",
-   "aerolinea": "avianca airlines",
-   "aerolinea_iata": "AV",
-   "nombre": "Mexico City",
-   "pais": "MX",
-   "region": "latinoamerica",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20MEX%20from%20SJU%20on%202026-11-07%20through%202026-11-14&hl=es&curr=USD",
-   "mediana": null
-  },
   "SEA": {
    "precio": 800.0,
    "fecha": "2026-11-07",
@@ -624,6 +624,19 @@
    "pais": "IT",
    "region": "europa",
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20TSF%20from%20SJU%20on%202026-11-27%20through%202026-12-11&hl=es&curr=USD",
+   "mediana": null
+  },
+  "MEX": {
+   "precio": 863.0,
+   "fecha": "2026-11-07",
+   "salida": "2026-11-07",
+   "regreso": "2026-11-14",
+   "aerolinea": "Arajet",
+   "aerolinea_iata": "DM",
+   "nombre": "Mexico City",
+   "pais": "MX",
+   "region": "latinoamerica",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20NLU%20from%20SJU%20on%202026-11-07%20through%202026-11-14&hl=es&curr=USD",
    "mediana": null
   },
   "IST": {
@@ -731,16 +744,16 @@
    "mediana": null
   },
   "CHI": {
-   "precio": 357.0,
+   "precio": 270.0,
    "fecha": "2026-11-07",
-   "salida": "2026-12-14",
-   "regreso": "2026-12-17",
-   "aerolinea": "Frontier Airlines",
+   "salida": "2027-02-09",
+   "regreso": "2027-02-19",
+   "aerolinea": "Frontier",
    "aerolinea_iata": "F9",
    "nombre": "Chicago",
    "pais": "US",
    "region": "usa",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20ORD%20from%20SJU%20on%202026-12-14%20through%202026-12-17&hl=es&curr=USD",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20ORD%20from%20SJU%20on%202027-02-09%20through%202027-02-19&hl=es&curr=USD",
    "mediana": null
   },
   "BOG": {
@@ -783,7 +796,7 @@
    "mediana": null
   },
   "CLO": {
-   "precio": 480.0,
+   "precio": 486.0,
    "fecha": "2026-11-07",
    "salida": "2026-12-16",
    "regreso": "2026-12-20",
@@ -990,19 +1003,6 @@
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20SBH%20from%20SJU%20on%202027-01-12%20through%202027-01-20&hl=es&curr=USD",
    "mediana": null
   },
-  "BUD": {
-   "precio": 790.0,
-   "fecha": "2026-11-07",
-   "salida": "2027-01-17",
-   "regreso": "2027-01-27",
-   "aerolinea": "jetBlue",
-   "aerolinea_iata": "B6",
-   "nombre": "Budapest",
-   "pais": "HU",
-   "region": "europa",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20BUD%20from%20SJU%20on%202027-01-17%20through%202027-01-27&hl=es&curr=USD",
-   "mediana": null
-  },
   "SFG": {
    "precio": 1043.0,
    "fecha": "2026-11-07",
@@ -1120,6 +1120,19 @@
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20LAS%20from%20SJU%20on%202027-07-25%20through%202027-07-31&hl=es&curr=USD",
    "mediana": null
   },
+  "DEN": {
+   "precio": 432.0,
+   "fecha": "2026-11-07",
+   "salida": "2027-08-31",
+   "regreso": "2027-09-08",
+   "aerolinea": "American Airlines",
+   "aerolinea_iata": "AA",
+   "nombre": "Denver",
+   "pais": "US",
+   "region": "usa",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20DEN%20from%20SJU%20on%202027-08-31%20through%202027-09-08&hl=es&curr=USD",
+   "mediana": null
+  },
   "SXM": {
    "precio": 539.0,
    "fecha": "2026-11-07",
@@ -1133,56 +1146,43 @@
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20SXM%20from%20SJU%20on%202027-09-01%20through%202027-09-04&hl=es&curr=USD",
    "mediana": null
   },
-  "BOS": {
-   "precio": 416.0,
+  "YTO": {
+   "precio": 755.0,
    "fecha": "2026-11-07",
-   "salida": "2027-01-11",
-   "regreso": "2027-01-21",
+   "salida": "2027-06-04",
+   "regreso": "2027-06-11",
    "aerolinea": "American",
    "aerolinea_iata": "AA",
-   "nombre": "Boston",
-   "pais": "US",
-   "region": "usa",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20BOS%20from%20SJU%20on%202027-01-11%20through%202027-01-21&hl=es&curr=USD",
+   "nombre": "Toronto",
+   "pais": "CA",
+   "region": "canada",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20YYZ%20from%20SJU%20on%202027-06-04%20through%202027-06-11&hl=es&curr=USD",
    "mediana": null
   },
-  "OSA": {
-   "precio": 2326.0,
+  "OGG": {
+   "precio": 856.0,
    "fecha": "2026-11-07",
-   "salida": "2026-12-15",
-   "regreso": "2026-12-25",
-   "aerolinea": "United, Jetstar",
-   "aerolinea_iata": "UA",
-   "nombre": "Osaka",
-   "pais": "JP",
-   "region": "japon",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20KIX%20from%20SJU%20on%202026-12-15%20through%202026-12-25&hl=es&curr=USD",
-   "mediana": null
-  },
-  "HNL": {
-   "precio": 866.0,
-   "fecha": "2026-11-07",
-   "salida": "2027-02-16",
-   "regreso": "2027-02-21",
+   "salida": "2027-01-16",
+   "regreso": "2027-01-23",
    "aerolinea": "United",
    "aerolinea_iata": "UA",
-   "nombre": "Honolulu",
+   "nombre": "Maui",
    "pais": "US",
    "region": "hawaii",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20HNL%20from%20SJU%20on%202027-02-16%20through%202027-02-21&hl=es&curr=USD",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20OGG%20from%20SJU%20on%202027-01-16%20through%202027-01-23&hl=es&curr=USD",
    "mediana": null
   },
-  "LIS": {
-   "precio": 1250.0,
+  "ROM": {
+   "precio": 1160.0,
    "fecha": "2026-11-07",
-   "salida": "2027-06-20",
-   "regreso": "2027-06-25",
-   "aerolinea": "Iberia",
-   "aerolinea_iata": "IB",
-   "nombre": "Lisboa",
-   "pais": "PT",
+   "salida": "2027-06-03",
+   "regreso": "2027-06-13",
+   "aerolinea": "JetBlue, Condor",
+   "aerolinea_iata": "B6",
+   "nombre": "Roma",
+   "pais": "IT",
    "region": "europa",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20LIS%20from%20SJU%20on%202027-06-20%20through%202027-06-25&hl=es&curr=USD",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20FCO%20from%20SJU%20on%202027-06-03%20through%202027-06-13&hl=es&curr=USD",
    "mediana": null
   },
   "AKL": {
@@ -1209,6 +1209,38 @@
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20BFL%20from%20SJU&hl=es&curr=USD",
    "mediana": null
   },
+  "BOS": {
+   "precio": 345.0,
+   "fecha": "2026-11-07",
+   "nombre": "Boston",
+   "pais": "US",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20BOS%20from%20SJU&hl=es&curr=USD",
+   "mediana": null
+  },
+  "BUD": {
+   "precio": 790.0,
+   "fecha": "2026-11-07",
+   "nombre": "Budapest",
+   "pais": "HU",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20BUD%20from%20SJU&hl=es&curr=USD",
+   "mediana": null
+  },
+  "HNL": {
+   "precio": 866.0,
+   "fecha": "2026-11-07",
+   "nombre": "Honolulu",
+   "pais": "US",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20HNL%20from%20SJU&hl=es&curr=USD",
+   "mediana": null
+  },
+  "LIS": {
+   "precio": 1250.0,
+   "fecha": "2026-11-07",
+   "nombre": "Lisbon",
+   "pais": "PT",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20LIS%20from%20SJU&hl=es&curr=USD",
+   "mediana": null
+  },
   "LON": {
    "precio": 868.0,
    "fecha": "2026-11-06",
@@ -1217,12 +1249,12 @@
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20LON%20from%20SJU&hl=es&curr=USD",
    "mediana": null
   },
-  "ROM": {
-   "precio": 1299.0,
+  "OSA": {
+   "precio": 2326.0,
    "fecha": "2026-11-07",
-   "nombre": "Rome",
-   "pais": "IT",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20ROM%20from%20SJU&hl=es&curr=USD",
+   "nombre": "Osaka",
+   "pais": "JP",
+   "link": "https://www.google.com/travel/flights?q=Flights%20to%20OSA%20from%20SJU&hl=es&curr=USD",
    "mediana": null
   },
   "SNU": {
@@ -1239,14 +1271,6 @@
    "nombre": "Montreal",
    "pais": "CA",
    "link": "https://www.google.com/travel/flights?q=Flights%20to%20YMQ%20from%20SJU&hl=es&curr=USD",
-   "mediana": null
-  },
-  "YTO": {
-   "precio": 413.0,
-   "fecha": "2026-11-06",
-   "nombre": "Toronto",
-   "pais": "CA",
-   "link": "https://www.google.com/travel/flights?q=Flights%20to%20YTO%20from%20SJU&hl=es&curr=USD",
    "mediana": null
   },
   "YVR": {

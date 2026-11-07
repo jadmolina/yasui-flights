@@ -1,7 +1,7 @@
 {
- "ultima_corrida": "2026-11-07T20:20:30+00:00",
- "segundos": 154,
- "tarifas": 3108,
+ "ultima_corrida": "2026-11-07T23:44:06+00:00",
+ "segundos": 164,
+ "tarifas": 3107,
  "ofertas": 5,
  "personas": 0,
  "fuentes": [
@@ -44,7 +44,7 @@
   {
    "nombre": "Google Flights",
    "ok": true,
-   "n": 33,
+   "n": 32,
    "detalle": "JFK 2027-01-05: TypeError: 'NoneType' object is not subscriptable; BQN 2026-12-08: TypeError: 'NoneType' object is not subscriptable"
   }
  ]
