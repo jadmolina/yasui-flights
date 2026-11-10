@@ -26,6 +26,7 @@ class Tarifa:
     destino_texto: Optional[str] = None  # texto del destino tal como lo publicó un feed
     origen_texto: Optional[str] = None   # texto del origen (feeds que salen de EE.UU.)
     puente: bool = False                 # True = sale de una ciudad puente (no de SJU)
+    alterno: bool = False                # True = sale de otro aeropuerto de PR (Aguadilla)
 
     # se llenan después (lugares.enriquecer)
     destino_nombre: Optional[str] = None
@@ -40,7 +41,7 @@ class Tarifa:
 
     def clave_ruta(self) -> str:
         base = f"{self.destino}:{'rt' if self.ida_y_vuelta else 'ow'}"
-        return f"{self.origen}>{base}" if self.puente else base
+        return f"{self.origen}>{base}" if (self.puente or self.alterno) else base
 
     def clave_unica(self) -> str:
         if self.fuente == "feed" and self.link:

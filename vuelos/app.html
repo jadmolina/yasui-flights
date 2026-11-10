@@ -246,6 +246,8 @@ h2.sec{font-family:var(--serif);font-size:24px;margin:34px 0 4px;letter-spacing:
 .n2 .badge.niv{background:var(--ganga-soft);color:var(--ganga-ink)}
 .n1 .badge.niv{background:var(--oferta-soft);color:var(--oferta-ink)}
 .badge.combo{background:var(--combo-soft);color:var(--combo-ink)}
+.badge.bqn{background:var(--bg2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.badge.md{background:var(--warn-soft);color:var(--warn)}
 .reg{font-size:12px;color:var(--muted);font-weight:600}
 .card h3{margin:2px 0 0;font-size:22px;letter-spacing:-.01em;line-height:1.15;font-family:var(--serif)}
 .code{font:700 12px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);margin-left:7px;letter-spacing:.06em}
@@ -267,6 +269,8 @@ h2.sec{font-family:var(--serif);font-size:24px;margin:34px 0 4px;letter-spacing:
 .itin-r .f{color:var(--muted)}
 .itin-r.sin-f{grid-template-columns:1fr}
 .itin-nota{font-size:12px;color:var(--muted);margin-top:4px}
+.itin-con{font-size:12.5px;font-weight:700;color:var(--warn);margin:1px 0 2px 70px}
+.itin-con.sin-f{margin-left:0}
 .boletos{display:grid;gap:4px;font-size:13.5px}
 .boletos-h{font-size:12.5px;color:var(--muted)}
 .bol{display:grid;grid-template-columns:auto 1fr auto;gap:0 8px;align-items:center;border-bottom:1px dashed var(--line);padding:5px 0}
@@ -349,6 +353,11 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const dinero = n => n == null ? "—" : "$" + Math.round(n).toLocaleString("en-US");
 const fmtFecha = d => { if(!d) return ""; const x = new Date(String(d).slice(0,10) + "T12:00:00"); return x.toLocaleDateString("es-PR",{day:"numeric",month:"short"}).replace(".",""); };
 const dias = (a,b) => Math.round((new Date(b) - new Date(a)) / 864e5);
+/* "2026-12-10T17:05..." -> "5:05 pm" (hora local de ese aeropuerto, tal como viene) */
+const fmtHora = iso => { const m = /T(\d\d):(\d\d)/.exec(iso || ""); if (!m) return ""; const h = +m[1]; return `${h % 12 || 12}:${m[2]} ${h >= 12 ? "pm" : "am"}`; };
+const fmtMin = n => n >= 60 ? `${Math.floor(n / 60)} h${n % 60 ? " " + (n % 60) + " min" : ""}` : `${n} min`;
+/* De qué aeropuerto de PR sale (SJU casi siempre; a veces Aguadilla) */
+const salidaDe = o => o.origen && o.origen !== "SJU" ? (o.origen_nombre || o.origen) : "SJU";
 const norm = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9* ]+/g," ").trim();
 function hace(iso){
   if(!iso) return "";
@@ -630,7 +639,7 @@ function pantallaDestinos(){
   $("#app").innerHTML = hero({
     menu: !nuevo,
     titulo: "¿A dónde quieres ir?",
-    sub: "Escoge ciudades, países o regiones. Te avisamos de los mejores precios y errores de tarifa saliendo de SJU para esos lugares."
+    sub: "Escoge ciudades, países o regiones. Te avisamos de los mejores precios y errores de tarifa saliendo de San Juan (y de Aguadilla cuando sale mucho más barato) para esos lugares."
   }) + `
   <section class="centro ancho"><div class="panel">
     <label class="campo" for="nombre">¿Cómo te llamas? <span style="font-weight:400;color:var(--muted)">(opcional, para saludarte)</span></label>
@@ -780,18 +789,25 @@ function tarjeta(o, i = 0){
       : `<div class="itin-r sin-f"><span>${esc(desde)} → ${esc(hasta)}</span></div>`;
     const cambio = p.aeropuerto && t.aeropuerto_origen && p.aeropuerto !== t.aeropuerto_origen
       ? `Llegas a ${p.aeropuerto} y el vuelo a ${dest} sale de ${t.aeropuerto_origen} (otro aeropuerto). ` : "";
+    const cx = p.conexion || {};
+    const conLinea = c => c ? `<div class="itin-con${algunaFecha ? "" : " sin-f"}">Mismo día en ${esc(c.aeropuerto || ciudad)}: llegas ${fmtHora(c.llega)}, el otro sale ${fmtHora(c.sale)} (${fmtMin(c.minutos)})</div>` : "";
+    const riesgo = cx.ida || cx.vuelta
+      ? `Conectas el mismo día con 2 boletos separados: si el primer vuelo se atrasa, la otra aerolínea no te espera y pierdes el segundo. Ve solo con equipaje de mano (si chequeas maleta tienes que recogerla y volver a chequearla)${cx.vuelta && o.pais !== "US" ? " y acuérdate de que al volver pasas por aduana" : ""}.`
+      : "Si un vuelo se atrasa, la otra aerolínea no te espera: por eso llegas un día antes.";
     return `<article class="card n${o.nivel}" style="--i:${Math.min(i, 8)}">
       ${postal(o.region)}
-      <div class="top"><span class="badges"><span class="badge combo">Combinado</span><span class="badge niv">${esc(o.nivel_nombre)}</span></span><span class="reg">${esc(region)}</span></div>
+      <div class="top"><span class="badges"><span class="badge combo">Combinado</span>${cx.ida || cx.vuelta ? `<span class="badge md">Mismo día</span>` : ""}<span class="badge niv">${esc(o.nivel_nombre)}</span></span><span class="reg">${esc(region)}</span></div>
       ${titulo}
       <div class="precio"><span class="monto num">${dinero(o.precio)}</span><span class="tipo">total${p.exacto ? "" : " aprox."} ida y vuelta</span></div>
       <div class="comp">${comp}</div>
       <div class="itin">
         <div class="itin-h">Ida</div>
         ${fila(f(p.salida), "SJU", ciudad)}
+        ${conLinea(cx.ida)}
         ${fila(f(t.salida), ciudad, dest)}
         <div class="itin-h">Vuelta</div>
         ${fila(f(t.regreso), dest, ciudad)}
+        ${conLinea(cx.vuelta)}
         ${fila(f(p.regreso), ciudad, "SJU")}
         ${conFechas ? "" : `<div class="itin-nota">${t.salida ? "" : "Las fechas del vuelo a " + esc(dest) + " están en el post. "}El precio SJU ⇄ ${esc(ciudad)} es el típico; depende de las fechas que escojas.</div>`}
       </div>
@@ -801,7 +817,7 @@ function tarjeta(o, i = 0){
         <div class="bol">${LOGO(t.aerolinea_iata, t.aerolinea)}<span>${esc(ciudad)} ⇄ ${esc(dest)}</span><b class="num">${dinero(t.precio)}</b><small>${esc([t.aerolinea, t.sitio].filter(Boolean).join(" · "))}</small></div>
       </div>
       ${t.titulo ? `<p class="titulo">"${esc(t.titulo)}"</p>` : ""}
-      <div class="ojo">${esc(cambio)}Si un vuelo se atrasa, la otra aerolínea no te espera: por eso llegas un día antes.</div>
+      <div class="ojo">${esc(cambio)}${esc(riesgo)}</div>
       ${motivos}
       <div class="acciones col">
         <a class="btn osc" href="${esc(p.link)}" target="_blank" rel="noopener">Boleto SJU ⇄ ${esc(ciudad)}</a>
@@ -816,12 +832,15 @@ function tarjeta(o, i = 0){
   let verif = "";
   if (o.fuente !== "google" && o.verificado === true) verif = `<div class="verif si">Confirmado en Google Flights: ${dinero(o.precio_google)}</div>`;
   else if (o.verificado === false) verif = `<div class="verif no">Google Flights lo tiene a ${dinero(o.precio_google)} para esas fechas (puede que ya no esté)</div>`;
+  const ec = o.escala_corta;
+  const escala = ec ? `<div class="ojo"><b>Escala corta:</b> en ${esc(ec.aeropuerto || "la escala")} llegas ${fmtHora(ec.llega)} y el otro avión sale ${fmtHora(ec.sale)} (${fmtMin(ec.minutos)}). Es un solo boleto, así que si el primero se atrasa la aerolínea te reubica, pero hay que moverse rápido.</div>` : "";
+  const otroAp = o.origen && o.origen !== "SJU";
   const ver = o.link && o.fuente !== "google" ? `<a class="btn" href="${esc(o.link)}" target="_blank" rel="noopener">${o.fuente === "feed" ? "Ver post" : "Aviasales"}</a>` : "";
   return `<article class="card n${o.nivel}" style="--i:${Math.min(i, 8)}">
     ${postal(o.region)}
-    <div class="top"><span class="badges"><span class="badge niv">${esc(o.nivel_nombre)}</span></span><span class="reg">${esc(region)}</span></div>
+    <div class="top"><span class="badges">${otroAp ? `<span class="badge bqn">Sale de ${esc(salidaDe(o))}</span>` : ""}<span class="badge niv">${esc(o.nivel_nombre)}</span></span><span class="reg">${esc(region)}</span></div>
     ${titulo}
-    <div class="precio"><span class="monto num">${dinero(o.precio)}</span><span class="tipo">${o.ida_y_vuelta ? "ida y vuelta" : "solo ida"} desde SJU</span></div>
+    <div class="precio"><span class="monto num">${dinero(o.precio)}</span><span class="tipo">${o.ida_y_vuelta ? "ida y vuelta" : "solo ida"} desde ${esc(otroAp ? salidaDe(o) + " (" + o.origen + ")" : "SJU")}</span></div>
     <div class="comp">${comp}</div>
     <ul class="det">
       <li>${ICON.cal}<span>${fechas}</span></li>
@@ -829,7 +848,7 @@ function tarjeta(o, i = 0){
       <li>${ICON.ojo}<span>${esc(o.sitio || o.fuente)} &middot; ${hace(o.fuente === "feed" ? (o.encontrado || o.primera_vez) : o.ultima_vez)}</span></li>
     </ul>
     ${o.titulo ? `<p class="titulo">"${esc(o.titulo)}"</p>` : ""}
-    ${verif}${motivos}
+    ${verif}${escala}${motivos}
     <div class="acciones"><a class="btn osc" href="${esc(o.fuente === "google" && o.link ? o.link : o.link_google)}" target="_blank" rel="noopener">Google Flights</a>${ver}</div>
   </article>`;
 }

@@ -16,6 +16,7 @@ from .detector import NIVELES, Detector
 from .lugares import Lugares
 from .models import Tarifa
 from .sources.google_flights import link_google
+from .sources.travelpayouts import _dt
 from .util import log
 
 
@@ -46,11 +47,15 @@ class Combinador:
         margen = int(self.conf.get("dias_margen", 2))
         max_google = int(self.conf.get("maximo_google", 8))
         f_err = float(self.det.reglas.get("factor_error", 0.6))
+        mismo_dia = bool(self.conf.get("mismo_dia", True))
+        min_ida = int(self.conf.get("conexion_minima", 60))
+        min_vuelta_int = int(self.conf.get("conexion_minima_regreso_internacional", 180))
+        castigo = float(self.conf.get("castigo_mismo_dia", 40))
 
         # Lo más barato directo desde SJU a cada lugar (hoy)
         directo: Dict[str, float] = {}
         for t in tarifas:
-            if not t.puente and t.ida_y_vuelta and t.fuente != "feed":
+            if not t.puente and not t.alterno and t.ida_y_vuelta and t.fuente != "feed":
                 directo[t.destino] = min(directo.get(t.destino, float("inf")), t.precio)
 
         candidatos = []
@@ -80,7 +85,7 @@ class Combinador:
         exactos = google = sin_fechas = 0
         for _, t, llegar, ref, meta in candidatos:
             ap_tramo = (t.extra or {}).get("aeropuerto_origen") or self.aeropuertos_puente.get(t.origen) or t.origen
-            p_precio = p_salida = p_regreso = p_aerolinea = p_aeropuerto = p_iata = None
+            p_precio = p_salida = p_regreso = p_aerolinea = p_aeropuerto = p_iata = p_conexion = None
             exacto = False
             if t.salida:
                 # El vuelo largo tiene fechas: el SJU -> puente TIENE que cuadrar con ellas.
@@ -88,16 +93,20 @@ class Combinador:
                     continue
                 exactos += 1
                 puente = None
+                horas = self._horas(t, min_ida, min_vuelta_int) if mismo_dia else None
                 if self.tp is not None:
                     try:
-                        puente = self.tp.precio_puente(t.origen, t.salida, t.regreso, dias_antes, margen)
-                    except Exception:  # noqa: BLE001
+                        puente = self.tp.precio_puente(t.origen, t.salida, t.regreso, dias_antes, margen,
+                                                       horas=horas, castigo_mismo_dia=castigo)
+                    except Exception as e:  # noqa: BLE001
+                        log(f"  (combinado {t.origen}->{t.destino}: {e})")
                         puente = None
                 if puente is not None and puente.precio > 0:
                     p_precio, p_salida, p_regreso = puente.precio, puente.salida, puente.regreso
                     p_aerolinea = self.lugares.nombre_aerolinea(puente.aerolinea)
                     p_iata = puente.aerolinea if puente.aerolinea and len(puente.aerolinea) == 2 else None
                     p_aeropuerto = puente.aeropuerto
+                    p_conexion = (puente.extra or {}).get("conexion")
                     exacto = True
                 elif self.gf is not None and not getattr(self.gf, "bloqueado", False) and google < max_google:
                     google += 1
@@ -133,8 +142,12 @@ class Combinador:
                     "salida": p_salida, "regreso": p_regreso, "aerolinea": p_aerolinea,
                     "aerolinea_iata": p_iata, "aeropuerto": p_aeropuerto,
                     "link": link_google(self.origen, p_aeropuerto or t.origen, p_salida, p_regreso),
+                    # Si conectas el mismo día: {"ida": {"aeropuerto", "llega", "sale", "minutos"}, "vuelta": {...}}
+                    "conexion": p_conexion,
                 },
             })
+            if p_conexion:
+                o["mismo_dia"] = True
             clave = f"{t.origen}:{t.destino}:{(t.salida or '')[:7]}"
             if clave not in ofertas or o["precio"] < ofertas[clave]["precio"]:
                 ofertas[clave] = o
@@ -145,6 +158,21 @@ class Combinador:
         return lista
 
     # ------------------------------------------------------------------
+    @staticmethod
+    def _horas(t: Tarifa, min_ida: int, min_vuelta_int: int) -> Optional[dict]:
+        """Horas del vuelo largo (para ver si da tiempo de conectar el mismo día)."""
+        ex = t.extra or {}
+        sale = _dt(ex.get("sale_at"))
+        if sale is None:
+            return None
+        horas = {"sale": sale, "aeropuerto": ex.get("aeropuerto_origen"), "min_ida": min_ida,
+                 # volviendo de otro país hay que pasar aduana y volver a chequear maletas
+                 "min_vuelta": min_ida if t.pais in ("US", "PR") else min_vuelta_int}
+        vuelve, dur = _dt(ex.get("regresa_at")), ex.get("dur_vuelta")
+        if vuelve is not None and dur:
+            horas["vuelve_llega"] = (vuelve + timedelta(minutes=int(dur))).astimezone(sale.tzinfo)
+        return horas
+
     def _meta(self, t: Tarifa) -> float:
         """La meta es la misma que si saliera de SJU a ese destino."""
         copia = Tarifa(fuente=t.fuente, origen=self.origen, destino=t.destino, precio=t.precio,

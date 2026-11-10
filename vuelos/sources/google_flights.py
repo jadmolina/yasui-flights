@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import random
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import List, Optional
 from urllib.parse import quote
 
@@ -39,6 +39,38 @@ def link_google(origen: str, destino: str, salida: Optional[str] = None, regreso
     return f"https://www.google.com/travel/flights?q={quote(texto)}&hl=es&curr=USD"
 
 
+def _horas(vuelos) -> Optional[dict]:
+    """Hora de salida del primer avión y de llegada del último (horas locales)."""
+    try:
+        a, b = vuelos[0], vuelos[-1]
+        return {"sale": datetime(*a.departure.date, *a.departure.time).isoformat(timespec="minutes"),
+                "llega": datetime(*b.arrival.date, *b.arrival.time).isoformat(timespec="minutes"),
+                "aeropuerto_llega": getattr(b.to_airport, "code", None)}
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def escalas_de(vuelos) -> List[dict]:
+    """Cuánto tiempo hay entre un avión y el próximo en cada escala (horas locales del aeropuerto)."""
+    salida = []
+    for a, b in zip(vuelos or [], (vuelos or [])[1:]):
+        try:
+            llega = datetime(*a.arrival.date, *a.arrival.time)
+            sale = datetime(*b.departure.date, *b.departure.time)
+        except Exception:  # noqa: BLE001
+            continue
+        salida.append({"aeropuerto": getattr(a.to_airport, "code", None),
+                       "llega": llega.isoformat(timespec="minutes"), "sale": sale.isoformat(timespec="minutes"),
+                       "minutos": int((sale - llega).total_seconds() // 60)})
+    return salida
+
+
+def escala_corta(escalas: List[dict], limite: int = 90) -> Optional[dict]:
+    """La escala más corta si es de `limite` minutos o menos (p. ej. llegas 5:00 y sales 6:00)."""
+    cortas = [x for x in escalas or [] if x.get("minutos") is not None and 0 <= x["minutos"] <= limite]
+    return min(cortas, key=lambda x: x["minutos"]) if cortas else None
+
+
 class GoogleFlights:
     nombre = "Google Flights"
 
@@ -50,6 +82,7 @@ class GoogleFlights:
         self.fallos_seguidos = 0
         self.errores: List[str] = []
         self.bloqueado = False
+        self.limite_escala = int(self.conf.get("escala_corta_minutos", 90))
 
     # -------------------------------------------------------------- básico
     def precio(self, destino: str, salida: str, regreso: Optional[str], origen: Optional[str] = None) -> Optional[dict]:
@@ -87,10 +120,13 @@ class GoogleFlights:
         if not validos:
             return None
         mejor = min(validos, key=lambda f: f.price)
+        detalle = escalas_de(mejor.flights)
         return {
             "precio": float(mejor.price),
             "aerolinea": ", ".join(mejor.airlines[:2]) if mejor.airlines else None,
             "escalas": max(0, len(mejor.flights) - 1),
+            "escala_corta": escala_corta(detalle, self.limite_escala),
+            "primer_vuelo": _horas(mejor.flights),
         }
 
     # -------------------------------------------------------------- escaneo
@@ -122,6 +158,7 @@ class GoogleFlights:
                 precio=res["precio"], ida_y_vuelta=True, salida=salida, regreso=regreso,
                 aerolinea=res["aerolinea"], escalas=res["escalas"],
                 link=link_google(self.origen, fav["aeropuerto"], salida, regreso), encontrado=ahora_iso(),
+                extra={"escala_corta": res.get("escala_corta")},
             ))
         log(f"  Google Flights: {len(tarifas)} precios ({self.busquedas} búsquedas)")
         return tarifas
@@ -143,7 +180,8 @@ class GoogleFlights:
             if self.bloqueado:
                 break
             destino = o.get("aeropuerto") or o["destino"]
-            res = self.precio(destino, o["salida"], o.get("regreso") if o["ida_y_vuelta"] else None)
+            res = self.precio(destino, o["salida"], o.get("regreso") if o["ida_y_vuelta"] else None,
+                              origen=o.get("origen") or self.origen)
             revisadas += 1
             if not res:
                 continue
@@ -151,4 +189,6 @@ class GoogleFlights:
             o["verificado_en"] = ahora_iso()
             # Confirmado si Google lo tiene a no más de 15% por encima
             o["verificado"] = res["precio"] <= o["precio"] * 1.15
+            if o["verificado"] and res.get("escala_corta"):
+                o["escala_corta"] = res["escala_corta"]
         return revisadas

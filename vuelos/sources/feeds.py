@@ -14,7 +14,8 @@ import feedparser
 from ..models import Tarifa
 from ..util import aviso, log, sesion_http, horas_desde
 
-PR = r"(?:san juan|puerto rico|\bSJU\b)"
+PR = r"(?:san juan|puerto rico|aguadilla|\bSJU\b|\bBQN\b)"
+AGUADILLA = re.compile(r"aguadilla|\bBQN\b", re.I)
 ERROR = re.compile(r"error fare|mistake fare|fare glitch|price glitch|glitch fare|\berror\b|\bmistake\b", re.I)
 PRECIO = re.compile(r"(?:US\$|USD\s?|\$)\s?([\d][\d,]*(?:\.\d\d)?)|([\d][\d,]*)\s?(?:USD|dollars)", re.I)
 PREFIJOS = re.compile(
@@ -130,8 +131,10 @@ class Feeds:
                 vistos.add(link)
                 desde_pr = ruta[2]
                 encontrados += 1 if desde_pr else 0
+                aguadilla = desde_pr and bool(AGUADILLA.search(ruta[0]))
                 tarifas.append(Tarifa(
-                    fuente="feed", sitio=nombre, origen=self.config.get("origen", "SJU") if desde_pr else "",
+                    fuente="feed", sitio=nombre, alterno=aguadilla,
+                    origen=("BQN" if aguadilla else self.config.get("origen", "SJU")) if desde_pr else "",
                     destino="", destino_texto=ruta[1], origen_texto=None if desde_pr else ruta[0], precio=precio,
                     ida_y_vuelta=_tipo_viaje(titulo + " " + resumen), link=link, encontrado=fecha,
                     titulo=titulo, es_error=bool(ERROR.search(titulo)), puente=not desde_pr,

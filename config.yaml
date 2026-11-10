@@ -3,8 +3,14 @@
 #  Puedes cambiar cualquier cosa aquí y se aplica en la próxima búsqueda.
 # ============================================================
 
-origen: SJU            # Aeropuerto de salida (San Juan)
+origen: SJU            # Aeropuerto de salida principal (San Juan): aquí se busca todo
 moneda: USD
+
+# Otros aeropuertos de Puerto Rico. Se busca menos (solo "a donde sea") y una oferta
+# solo sale si es bastante más barata que lo más barato desde San Juan al mismo lugar.
+otros_origenes:
+  - { codigo: BQN, nombre: "Aguadilla" }
+ventaja_minima_otro_origen: 0.15   # 0.15 = tiene que salir por lo menos 15% más barato que desde SJU
 
 # ------------------------------------------------------------
 # Destinos base: se buscan siempre, aunque nadie los haya escogido.
@@ -88,6 +94,10 @@ combinados:
   dias_antes: 1              # Llegar a la ciudad puente 1 día antes y regresar 1 día después (boletos separados)
   dias_margen: 2             # ...o hasta 2 días más temprano / más tarde si sale más barato
   maximo_google: 8           # Si Aviasales no tiene el SJU -> puente para esas fechas, cuántos busca en Google
+  mismo_dia: true            # También vale llegar y montarte al otro avión el MISMO día (sale con aviso)
+  conexion_minima: 60        # Minutos mínimos entre un avión y el otro (mismo aeropuerto)
+  conexion_minima_regreso_internacional: 180  # Volviendo de otro país: aduana + volver a chequear maletas
+  castigo_mismo_dia: 40      # Prefiere llegar el día antes, a menos que el mismo día ahorre $40 o más
   puentes:
     - { nombre: "Miami",           ciudad: MIA, aeropuerto: MIA }
     - { nombre: "Fort Lauderdale", ciudad: FLL, aeropuerto: FLL }
@@ -103,6 +113,7 @@ combinados:
     - { nombre: "San Francisco",   ciudad: SFO, aeropuerto: SFO }
 
 google_flights:
+  escala_corta_minutos: 90   # escalas de 90 min o menos salen con aviso ("llegas 5:00, sales 6:00")
   activo: true
   busquedas_por_corrida: 10  # Fechas al azar en tus favoritos, cada vez que corre
   verificar_ofertas: 15      # Cuántas ofertas confirma en Google Flights por corrida

@@ -12,6 +12,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import time
 from collections import Counter
@@ -70,6 +71,7 @@ def mandar_emails(det: Detector, store, pendientes: List[tuple], avisos: Dict[st
     usuario, clave = env("GMAIL_USER"), env("GMAIL_APP_PASSWORD")
     if not (usuario and clave):
         aviso(f"Hay {len(pendientes)} email(s) para mandar pero faltan GMAIL_USER / GMAIL_APP_PASSWORD.")
+        mandar_emails.ultimo_error = "faltan GMAIL_USER / GMAIL_APP_PASSWORD"
         return 0
     remitente = config.get("email", {}).get("nombre_remitente", "Yasui Flights")
     enviados = 0
@@ -80,6 +82,7 @@ def mandar_emails(det: Detector, store, pendientes: List[tuple], avisos: Dict[st
                 cartero.mandar(persona["email"], contenido, baja)
             except Exception as e:  # noqa: BLE001
                 aviso(f"No pude mandarle el email a una persona: {e}")
+                mandar_emails.ultimo_error = str(e)[:200]
                 continue
             enviados += 1
             av = det.marcar_avisados(incluidas, avisos.setdefault(persona["id"], {}))
@@ -111,7 +114,8 @@ def correr_demo(config: dict, mandar: bool) -> int:
     ofertas = det.combinar(det.evaluar_todas(tarifas) + combos)
     for o in ofertas:  # simula la verificación con Google
         if o["destino"] == "TYO" and o.get("tipo") != "combinado":
-            o.update(verificado=True, precio_google=412)
+            o.update(verificado=True, precio_google=412, escala_corta={
+                "aeropuerto": "LAX", "llega": f"{o['salida']}T17:00", "sale": f"{o['salida']}T18:00", "minutos": 60})
         if o["destino"] == "PAR" and o.get("tipo") != "combinado":
             o.update(verificado=False, precio_google=690)
     precios = det.precios_mapa(tarifas)
@@ -162,12 +166,16 @@ def main() -> int:
 
     # ---------------- ¿Quién recibe ofertas?
     store = suscriptores.conectar()
+    diag = {"modo": store.modo, **getattr(store, "diag", {})}
     try:
         personas = store.suscriptores()
+        diag.update(getattr(store, "diag", {}))
     except Exception as e:  # noqa: BLE001
         aviso(f"No pude leer la gente apuntada ({e}). Sigo sin mandar emails personalizados.")
+        diag["error"] = str(e)[:300]
         personas = []
-    log(f"  {len(personas)} persona(s) recibiendo ofertas ({store.modo})")
+    diag["personas"] = len(personas)
+    log(f"  {len(personas)} persona(s) recibiendo ofertas ({store.modo}) | " + json.dumps(diag, ensure_ascii=False))
     intereses = intereses_de(personas, config)
     ciudades = ciudades_de(personas)
     det.elegidos = set(ciudades)
@@ -186,6 +194,8 @@ def main() -> int:
             try:
                 tp = Travelpayouts(token, config)
                 nuevas = tp.buscar(ciudades)
+                for otro in config.get("otros_origenes") or []:  # Aguadilla: búsqueda más ligera
+                    nuevas += tp.buscar_desde(otro["codigo"], int(config.get("travelpayouts", {}).get("meses_a_buscar", 8)))
                 if config.get("combinados", {}).get("activo", True):
                     nuevas += tp.buscar_puentes(config["combinados"].get("puentes", []))
                 tarifas += nuevas
@@ -248,24 +258,33 @@ def main() -> int:
     log(f"Resultado: {len(ofertas)} ofertas ({n3} posibles errores, {n_combo} combinados)")
 
     # ---------------- Emails, uno por persona
+    emails = {"pendientes": 0, "enviados": 0}
     if not args.sin_email and config.get("email", {}).get("activo", True) and personas:
         try:
             avisos = store.avisos()
         except Exception as e:  # noqa: BLE001
             aviso(f"No pude leer los avisos anteriores ({e}); no mando emails esta vez para no repetir.")
+            emails["error"] = f"no pude leer los avisos: {e}"[:300]
             avisos = None
         if avisos is not None:
             pendientes = armar_emails(det, personas, avisos, ofertas, precios, url_sitio)
+            emails["pendientes"] = len(pendientes)
             if pendientes:
                 try:
                     n = mandar_emails(det, store, pendientes, avisos, config, url_sitio)
+                    emails["enviados"] = n
+                    if getattr(mandar_emails, "ultimo_error", None):
+                        emails["error"] = mandar_emails.ultimo_error
                     log(f"Emails enviados: {n} de {len(pendientes)}")
                 except Exception as e:  # noqa: BLE001
                     aviso(f"No pude conectar con Gmail: {e}")
+                    emails["error"] = f"Gmail: {e}"[:300]
             else:
                 log("No hay nada nuevo para nadie.")
     elif args.sin_email:
         log("(--sin-email: no mandé emails)")
+    elif not personas:
+        emails["error"] = "no hay nadie a quien mandarle (0 personas)"
 
     # ---------------- Guardar y página
     det.guardar(ofertas)
@@ -273,7 +292,7 @@ def main() -> int:
     ruta = site.generar(datos)
     guardar_json(DATA / "estado.json", {"ultima_corrida": det.corrida, "segundos": round(time.time() - inicio),
                                          "tarifas": len(tarifas), "ofertas": len(ofertas), "personas": len(personas),
-                                         "fuentes": fuentes})
+                                         "suscriptores": diag, "emails": emails, "fuentes": fuentes})
     log(f"Página: {ruta}  ({round(time.time() - inicio)} s)")
     return 0
 

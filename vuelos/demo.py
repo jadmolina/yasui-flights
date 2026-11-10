@@ -88,7 +88,14 @@ def tarifas_demo() -> List[Tarifa]:
         return Tarifa(fuente="travelpayouts", sitio="Aviasales", origen=origen, destino=dest, precio=precio,
                       salida=_d(sal), regreso=_d(sal + dur), aerolinea=al, escalas=esc, puente=True,
                       link=f"https://www.aviasales.com/search/{origen}{dest}", encontrado=ya,
-                      extra={"aeropuerto_origen": {"LAX": "LAX", "SFO": "OAK"}.get(origen, origen)})
+                      extra={"aeropuerto_origen": {"LAX": "LAX", "SFO": "OAK"}.get(origen, origen),
+                             "sale_at": _d(sal) + "T18:05:00-08:00"})
+
+    def aguadilla(dest, precio, sal, dur, al, esc, ap):
+        t = tp(dest, precio, sal, dur, al, esc)
+        t.origen, t.alterno, t.aeropuerto = "BQN", True, ap
+        t.link = "https://www.aviasales.com/search/BQN" + dest
+        return t
 
     def feed_puente(sitio, titulo, precio, origen_texto, destino_texto, error=False):
         return Tarifa(fuente="feed", sitio=sitio, origen="", origen_texto=origen_texto, destino="",
@@ -113,6 +120,10 @@ def tarifas_demo() -> List[Tarifa]:
         tp("CHI", 240, 70, 6, "UA", 0),
         tp("MAD", 590, 100, 7, "IB", 0),
         tp("BOG", 210, 50, 6, "B6", 0),
+        tp("NYC", 189, 55, 5, "B6", 0),
+        aguadilla("NYC", 59, 52, 5, "B6", 0, "EWR"),
+        tp("ORL", 140, 36, 4, "NK", 0),
+        aguadilla("ORL", 150, 35, 4, "NK", 0, "MCO"),   # no le gana a SJU por bastante: no sale
         feed("Secret Flying", "San Juan, Puerto Rico to London, United Kingdom for only $229 USD roundtrip (ERROR FARE)", 229, True, "London, United Kingdom"),
         feed("Secret Flying (San Juan)", "Non-stop from San Juan, Puerto Rico to Madrid, Spain for only $312 USD roundtrip", 312, False, "Madrid, Spain"),
         # Ofertas que salen de EE.UU. (para combinados)
@@ -142,12 +153,20 @@ class TravelpayoutsDemo:
     """Simula lo que cuesta SJU -> ciudad puente para esas fechas."""
     PRECIOS = {"LAX": 289, "SFO": 318, "CHI": 236, "NYC": 160, "MIA": 120}
 
-    def precio_puente(self, ciudad, salida, regreso, dias_antes=1, margen=2):
+    def precio_puente(self, ciudad, salida, regreso, dias_antes=1, margen=2, horas=None, castigo_mismo_dia=40):
         if ciudad not in self.PRECIOS or not salida:
             return None
         ida = (date.fromisoformat(salida) - timedelta(days=dias_antes)).isoformat()
         vuelta = (date.fromisoformat(regreso) + timedelta(days=dias_antes)).isoformat() if regreso else None
-        t = Tarifa(fuente="travelpayouts", origen="SJU", destino=ciudad, precio=self.PRECIOS[ciudad],
+        conexion = None
+        if horas and ciudad == "LAX":  # ejemplo: llegas a LAX a las 5:00 pm y el vuelo a Osaka sale a las 6:05 pm
+            ida = salida
+            sale = horas["sale"]
+            llega = sale - timedelta(minutes=65)
+            conexion = {"ida": {"aeropuerto": "LAX", "llega": llega.isoformat(timespec="minutes"),
+                                "sale": sale.isoformat(timespec="minutes"), "minutos": 65}, "vuelta": None}
+        t = Tarifa(fuente="travelpayouts", origen="SJU", destino=ciudad, precio=self.PRECIOS[ciudad] - (60 if conexion else 0),
                    salida=ida, regreso=vuelta, aerolinea="AA", aeropuerto={"LAX": "LAX", "SFO": "SFO", "CHI": "ORD"}.get(ciudad))
         t.extra["exacto"] = True
+        t.extra["conexion"] = conexion
         return t

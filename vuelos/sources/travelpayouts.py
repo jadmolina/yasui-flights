@@ -7,13 +7,24 @@ Docs: https://support.travelpayouts.com/hc/en-us/articles/203956163
 from __future__ import annotations
 
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from typing import Iterable, List, Optional
 
 from ..models import Tarifa
 from ..util import aviso, log, sesion_http, ahora_iso
 
 API = "https://api.travelpayouts.com/aviasales/v3/prices_for_dates"
+
+
+def _dt(texto: Optional[str]) -> Optional[datetime]:
+    """'2026-12-10T06:15:00-04:00' -> datetime con zona horaria (None si no se puede)."""
+    if not texto or "T" not in texto:
+        return None
+    try:
+        v = datetime.fromisoformat(texto.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return v if v.tzinfo else None
 
 
 def _meses(n: int) -> Iterable[str]:
@@ -90,7 +101,11 @@ class Travelpayouts:
             aeropuerto=fila.get("destination_airport"),
             puente=puente,
             extra={"vuelo": fila.get("flight_number"), "duracion_min": fila.get("duration"),
-                   "aeropuerto_origen": fila.get("origin_airport")},
+                   "aeropuerto_origen": fila.get("origin_airport"),
+                   # horas exactas (con zona horaria) y duración de cada dirección: sirven para
+                   # saber a qué hora llegas y si da tiempo de conectar el mismo día
+                   "sale_at": fila.get("departure_at"), "regresa_at": fila.get("return_at") if ida_y_vuelta else None,
+                   "dur_ida": fila.get("duration_to"), "dur_vuelta": fila.get("duration_back")},
         )
 
     def buscar(self, destinos_extra: Iterable[str] = ()) -> List[Tarifa]:
@@ -127,6 +142,23 @@ class Travelpayouts:
             aviso(f"Travelpayouts tuvo {len(self.errores)} errores. Último: {self.errores[-1]}")
         return tarifas
 
+    def buscar_desde(self, origen: str, meses: int = 8) -> List[Tarifa]:
+        """Búsqueda más ligera desde otro aeropuerto de PR (Aguadilla): solo "a donde sea"."""
+        antes = self.llamadas
+        tarifas: List[Tarifa] = []
+        filas = []
+        for mes in _meses(meses):
+            filas += [(f, True) for f in self._get(origin=origen, departure_at=mes, one_way="false", unique="true")]
+        filas += [(f, True) for f in self._get(origin=origen, one_way="false", unique="true")]
+        filas += [(f, False) for f in self._get(origin=origen, one_way="true", unique="true")]
+        for fila, rt in filas:
+            t = self._convertir(fila, rt)
+            t.origen, t.alterno = origen, True
+            if t.precio > 0 and t.destino and t.destino not in (origen, self.origen):
+                tarifas.append(t)
+        log(f"  Travelpayouts desde {origen}: {len(tarifas)} precios ({self.llamadas - antes} llamadas)")
+        return tarifas
+
     def buscar_puentes(self, puentes: List[dict]) -> List[Tarifa]:
         """Lo más barato a cada destino saliendo de ciudades grandes de EE.UU. (ida y vuelta)."""
         antes = self.llamadas
@@ -141,46 +173,104 @@ class Travelpayouts:
         return tarifas
 
     def precio_puente(self, ciudad: str, salida: Optional[str], regreso: Optional[str],
-                      dias_antes: int = 1, margen: int = 2) -> Optional[Tarifa]:
+                      dias_antes: int = 1, margen: int = 2, horas: Optional[dict] = None,
+                      castigo_mismo_dia: float = 40) -> Optional[Tarifa]:
         """Lo más barato SJU -> ciudad puente que CUADRE con el otro vuelo:
         salir entre (salida - dias_antes - margen) y (salida - dias_antes),
         y regresar entre (regreso + dias_antes) y (regreso + dias_antes + margen).
+
+        Si sabemos las horas del otro vuelo (`horas`), también vale conectar el MISMO DÍA cuando hay
+        por lo menos horas["min_ida"] / horas["min_vuelta"] minutos entre un avión y el otro, en el mismo
+        aeropuerto. Se prefiere llegar el día antes, a menos que el mismo día ahorre `castigo_mismo_dia`.
+          horas = {"sale": datetime del vuelo largo, "aeropuerto": de dónde sale,
+                   "vuelve_llega": datetime en que llega de vuelta a la ciudad puente (o None),
+                   "min_ida": 60, "min_vuelta": 60}
         Si Aviasales no tiene nada que cuadre, devuelve None (no se inventa un precio)."""
         if not salida:
             return None
+        horas = horas or {}
         d = date.fromisoformat(salida)
         r = date.fromisoformat(regreso) if regreso else None
         ida_max = d - timedelta(days=dias_antes)
         ida_min = ida_max - timedelta(days=margen)
         vuelta_min = r + timedelta(days=dias_antes) if r else None
         vuelta_max = vuelta_min + timedelta(days=margen) if vuelta_min else None
+        ap = horas.get("aeropuerto")
+        medio_dia = 12 * 60  # menos de 12 h entre los dos aviones = "mismo día"
 
-        def cuadra(f: dict) -> bool:
-            try:
-                ida = date.fromisoformat((f.get("departure_at") or "")[:10])
-            except ValueError:
-                return False
-            if not (ida_min <= ida <= ida_max):
-                return False
+        def conexion(llega: datetime, sale: datetime, aeropuerto) -> dict:
+            return {"aeropuerto": aeropuerto, "llega": llega.astimezone(sale.tzinfo).isoformat(timespec="minutes"),
+                    "sale": sale.isoformat(timespec="minutes"), "minutos": int((sale - llega).total_seconds() // 60)}
+
+        def revisar(f: dict) -> Optional[dict]:
+            """None si no cuadra. Si cuadra: {"ida": conexión del mismo día o None, "vuelta": ...}"""
+            sale = _dt(f.get("departure_at"))
+            if sale is None:
+                return None
+            mismo_ap = bool(ap and f.get("destination_airport") and f["destination_airport"] == ap)
+            con = {"ida": None, "vuelta": None}
+            # ---- ida (SJU -> puente)
+            if not (ida_min <= sale.date() <= d):
+                return None
+            if horas.get("sale") and f.get("duration_to"):
+                llega = sale + timedelta(minutes=int(f["duration_to"]))
+                c = conexion(llega, horas["sale"], f.get("destination_airport"))
+                if c["minutos"] < int(horas.get("min_ida", 60)):
+                    return None
+                if c["minutos"] < medio_dia:
+                    if not mismo_ap:
+                        return None  # cambiar de aeropuerto el mismo día con boletos separados: no
+                    con["ida"] = c
+            elif sale.date() > ida_max:
+                return None  # sin horas no podemos saber si da tiempo el mismo día
             if not r:
-                return True
-            try:
-                vuelta = date.fromisoformat((f.get("return_at") or "")[:10])
-            except ValueError:
-                return False
-            return vuelta_min <= vuelta <= vuelta_max
+                return con
+            # ---- vuelta (puente -> SJU)
+            vuelve = _dt(f.get("return_at"))
+            if vuelve is None or not (r <= vuelve.date() <= vuelta_max):
+                return None
+            if horas.get("vuelve_llega"):
+                c = conexion(horas["vuelve_llega"], vuelve, f.get("destination_airport"))
+                if c["minutos"] < int(horas.get("min_vuelta", 60)):
+                    return None
+                if c["minutos"] < medio_dia:
+                    if not mismo_ap:
+                        return None
+                    con["vuelta"] = c
+            elif vuelve.date() < vuelta_min:
+                return None
+            return con
 
         rt = "false" if r else "true"
-        # 1) fechas exactas (un día antes / un día después)
-        filas = self._get(destination=ciudad, departure_at=ida_max.isoformat(),
-                          return_at=vuelta_min.isoformat() if vuelta_min else None, one_way=rt, limit=10)
-        buenas = [f for f in filas if cuadra(f)]
-        # 2) todo el mes (o los dos meses) y nos quedamos con lo que cuadre
+        buenas: List[tuple] = []
+
+        def probar(filas: list) -> None:
+            for f in filas:
+                con = revisar(f)
+                if con is not None:
+                    buenas.append((f, con))
+
+        # 1) fechas exactas: un día antes / un día después
+        probar(self._get(destination=ciudad, departure_at=ida_max.isoformat(),
+                         return_at=vuelta_min.isoformat() if vuelta_min else None, one_way=rt, limit=10))
+        # 2) el mismo día (solo si sabemos a qué hora sale el otro vuelo)
+        if horas.get("sale"):
+            vuelta_md = (r if horas.get("vuelve_llega") else vuelta_min) if r else None
+            probar(self._get(destination=ciudad, departure_at=d.isoformat(),
+                             return_at=vuelta_md.isoformat() if vuelta_md else None, one_way=rt, limit=10))
+        # 3) todo el mes (o los dos meses) y nos quedamos con lo que cuadre
         if not buenas:
-            for mes in sorted({ida_min.strftime("%Y-%m"), ida_max.strftime("%Y-%m")}):
-                buenas += [f for f in self._get(destination=ciudad, departure_at=mes, one_way=rt, limit=1000) if cuadra(f)]
+            for mes in sorted({ida_min.strftime("%Y-%m"), d.strftime("%Y-%m")}):
+                probar(self._get(destination=ciudad, departure_at=mes, one_way=rt, limit=1000))
         if not buenas:
             return None
-        t = self._convertir(min(buenas, key=lambda f: f.get("price") or 1e9), bool(r))
+
+        def costo(par) -> float:
+            f, con = par
+            return float(f.get("price") or 1e9) + (castigo_mismo_dia if (con["ida"] or con["vuelta"]) else 0)
+
+        fila, con = min(buenas, key=costo)
+        t = self._convertir(fila, bool(r))
         t.extra["exacto"] = True
+        t.extra["conexion"] = con if (con["ida"] or con["vuelta"]) else None
         return t

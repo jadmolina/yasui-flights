@@ -59,6 +59,21 @@ class Detector:
         self.corrida = ahora_iso()
         self.hoy = hoy_pr()
         self.elegidos: set = set()  # ciudades que alguien escogió en la página (se tratan como favoritos)
+        self.origen = config.get("origen", "SJU")
+        # Aeropuertos de PR de donde se sale: SJU (principal) + otros (Aguadilla)
+        self.origenes: Dict[str, str] = {self.origen: "San Juan"}
+        for o in config.get("otros_origenes") or []:
+            self.origenes[o["codigo"]] = o.get("nombre") or o["codigo"]
+        self.ventaja = float(config.get("ventaja_minima_otro_origen", 0.15))
+
+    def en_pr(self, codigo: Optional[str]) -> bool:
+        """¿Este código (ciudad o aeropuerto) está en Puerto Rico?"""
+        if not codigo:
+            return False
+        if codigo in self.origenes:
+            return True
+        info = self.lugares.ciudades.get(codigo) or getattr(self.lugares, "aeropuertos", {}).get(codigo) or {}
+        return info.get("country") == "PR"
 
     # ============================================================ preparar
     def preparar(self, tarifas: List[Tarifa]) -> List[Tarifa]:
@@ -78,7 +93,10 @@ class Detector:
                     t.destino = _slug(t.destino_texto)
                     t.destino_nombre = (t.destino_texto or "").split(",")[0].strip() or t.destino_texto
                     t.pais = self.lugares.pais_por_texto(t.destino_texto or "")
-            listas.append(self.lugares.enriquecer(t))
+            t = self.lugares.enriquecer(t)
+            if t.pais == "PR" or self.en_pr(t.destino) or self.en_pr(t.aeropuerto):
+                continue  # de Puerto Rico a Puerto Rico no tiene sentido
+            listas.append(t)
         return listas
 
     # ============================================================ historial
@@ -95,7 +113,8 @@ class Detector:
         limite = (date.fromisoformat(self.hoy) - timedelta(days=120)).isoformat()
         for k in list(self.historial):
             self.historial[k] = {d: p for d, p in self.historial[k].items() if d >= limite}
-            if not self.historial[k]:
+            destino = k.split(">")[-1].rsplit(":", 1)[0]
+            if not self.historial[k] or self.en_pr(destino):
                 del self.historial[k]
 
     def mediana(self, clave: str) -> Optional[float]:
@@ -178,32 +197,54 @@ class Detector:
             "precio_google": None,
             "primera_vez": self.corrida,
             "ultima_vez": self.corrida,
+            "origen_nombre": self.origenes.get(t.origen),
             "link_google": link_google(t.origen, t.aeropuerto or (t.destino if len(t.destino) <= 4 else (t.destino_texto or t.destino)),
                                        t.salida, t.regreso),
             "centavos_milla": round(t.precio / (t.distancia * (2 if t.ida_y_vuelta else 1)) * 100, 1)
             if t.distancia and t.distancia > 300 else None,
         })
+        if (t.extra or {}).get("escala_corta"):
+            o["escala_corta"] = t.extra["escala_corta"]  # p. ej. llegas 5:00 pm y el otro avión sale 6:00 pm
         if t.fuente == "google":
             o["verificado"] = True
             o["precio_google"] = t.precio
         return o
 
     def evaluar_todas(self, tarifas: List[Tarifa]) -> List[dict]:
-        ofertas = [o for o in (self.evaluar(t) for t in tarifas if not t.puente) if o]
-        # Para no llenar la página: la más barata por destino + tipo de viaje + mes
+        # Lo más barato desde SJU a cada destino hoy: Aguadilla solo cuenta si le gana por bastante
+        desde_sju: Dict[tuple, float] = {}
+        for t in tarifas:
+            if not t.puente and not t.alterno and t.fuente != "feed":
+                k = (t.destino, t.ida_y_vuelta)
+                desde_sju[k] = min(desde_sju.get(k, float("inf")), t.precio)
+        ofertas = []
+        for t in tarifas:
+            if t.puente:
+                continue
+            ref = desde_sju.get((t.destino, t.ida_y_vuelta)) if t.alterno else None
+            if ref is not None and t.fuente != "feed" and t.precio > ref * (1 - self.ventaja):
+                continue  # desde San Juan sale igual o casi igual: no vale la pena guiar hasta Aguadilla
+            o = self.evaluar(t)
+            if not o:
+                continue
+            if ref is not None and t.precio < ref:
+                o["precio_sju"] = ref
+                o["motivos"].append(f"{1 - t.precio / ref:.0%} más barato que lo mejor desde SJU (${ref:,.0f})")
+            ofertas.append(o)
+        # Para no llenar la página: la más barata por salida + destino + tipo de viaje + mes
         mejores: Dict[str, dict] = {}
         for o in ofertas:
             if o["fuente"] == "feed":
                 k = o["id"]
             else:
-                k = f"{o['destino']}:{o['ida_y_vuelta']}:{(o.get('salida') or '')[:7]}"
+                k = f"{o['origen']}>{o['destino']}:{o['ida_y_vuelta']}:{(o.get('salida') or '')[:7]}"
             if k not in mejores or o["precio"] < mejores[k]["precio"]:
                 mejores[k] = o
-        # ...y máximo 2 fechas por destino (las mejores)
+        # ...y máximo 2 fechas por destino desde SJU (1 desde Aguadilla)
         por_destino: Dict[str, List[dict]] = {}
         for o in sorted(mejores.values(), key=lambda o: (-o["nivel"], -(o.get("descuento") or 0), o["precio"])):
-            k = o["id"] if o["fuente"] == "feed" else f"{o['destino']}:{o['ida_y_vuelta']}"
-            if len(por_destino.setdefault(k, [])) < 2:
+            k = o["id"] if o["fuente"] == "feed" else f"{o['origen']}>{o['destino']}:{o['ida_y_vuelta']}"
+            if len(por_destino.setdefault(k, [])) < (1 if o.get("alterno") else 2):
                 por_destino[k].append(o)
         return [o for lista in por_destino.values() for o in lista]
 
@@ -220,10 +261,14 @@ class Detector:
                     o["verificado"] = p["verificado"]
                     o["precio_google"] = p.get("precio_google")
                     o["verificado_en"] = p.get("verificado_en")
+                    if p.get("escala_corta"):
+                        o["escala_corta"] = p["escala_corta"]
             resultado[o["id"]] = o
         dias_feed = float(self.config.get("feeds", {}).get("dias_a_mostrar", 10))
         for oid, p in previas.items():
             if oid in resultado or p.get("v") != VERSION_REGLAS:
+                continue
+            if p.get("pais") == "PR" or self.en_pr(p.get("destino")):
                 continue
             if p["fuente"] == "feed":
                 vigente = horas_desde(p.get("encontrado") or p.get("primera_vez")) < dias_feed * 24
@@ -251,6 +296,8 @@ class Detector:
             return f"combo:{o['tramo']['origen']}:{o['destino']}"
         if o["fuente"] == "feed":
             return "feed:" + o["id"]
+        if o.get("alterno"):
+            return f"{o['origen']}>{o['destino']}:{'rt' if o['ida_y_vuelta'] else 'ow'}"
         # Una alerta por destino (no por mes) para no recibir 5 emails de Tokio
         return f"{o['destino']}:{'rt' if o['ida_y_vuelta'] else 'ow'}"
 
@@ -295,7 +342,7 @@ class Detector:
         """Precio más bajo (ida y vuelta desde SJU) por destino: lo de hoy, o lo último que se vio."""
         mapa: Dict[str, dict] = {}
         for t in tarifas:
-            if t.puente or not t.ida_y_vuelta or t.fuente == "feed":
+            if t.puente or t.alterno or not t.ida_y_vuelta or t.fuente == "feed":
                 continue
             actual = mapa.get(t.destino)
             if actual is None or t.precio < actual["precio"]:
@@ -309,7 +356,7 @@ class Detector:
             if not clave.endswith(":rt") or ">" in clave or not serie:
                 continue
             codigo = clave[:-3]
-            if codigo not in mapa:
+            if codigo not in mapa and not self.en_pr(codigo):
                 ultimo = max(serie)
                 info = self.lugares.ciudades.get(codigo, {})
                 mapa[codigo] = {"precio": serie[ultimo], "fecha": ultimo, "nombre": info.get("es") or info.get("name") or codigo,
@@ -324,7 +371,8 @@ class Detector:
         filas = []
         for fav in self.config.get("favoritos", []):
             codigo = fav["ciudad"]
-            de_hoy = [t for t in tarifas if t.destino == codigo and t.ida_y_vuelta and t.fuente != "feed"]
+            de_hoy = [t for t in tarifas if t.destino == codigo and t.ida_y_vuelta and t.fuente != "feed"
+                      and not t.puente and not t.alterno]
             mejor = min(de_hoy, key=lambda t: t.precio) if de_hoy else None
             serie = self.historial.get(f"{codigo}:rt", {})
             ultimo_dia = max(serie) if serie else None
