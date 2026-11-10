@@ -1,19 +1,21 @@
 {
- "ultima_corrida": "2026-11-10T22:46:01+00:00",
- "segundos": 139,
- "tarifas": 3273,
- "ofertas": 12,
- "personas": 0,
+ "ultima_corrida": "2026-11-10T23:00:24+00:00",
+ "segundos": 222,
+ "tarifas": 3275,
+ "ofertas": 13,
+ "personas": 4,
  "suscriptores": {
   "modo": "supabase",
-  "clave": "desconocida",
-  "error": "Supabase 401: {\"message\":\"Invalid API key\",\"hint\":\"Double check your Supabase `anon` or `service_role` API key.\"}",
-  "personas": 0
+  "clave": "secreta (sb_secret)",
+  "filas": 4,
+  "de_baja": 0,
+  "sin_destinos": 0,
+  "sin_email": 0,
+  "personas": 4
  },
  "emails": {
-  "pendientes": 0,
-  "enviados": 0,
-  "error": "no hay nadie a quien mandarle (0 personas)"
+  "pendientes": 4,
+  "enviados": 4
  },
  "fuentes": [
   {
@@ -55,8 +57,8 @@
   {
    "nombre": "Google Flights",
    "ok": true,
-   "n": 27,
-   "detalle": "BCN 2026-12-27: IndexError: list index out of range; SAL 2026-11-13: IndexError: list index out of range"
+   "n": 33,
+   "detalle": "SAL 2026-11-13: IndexError: list index out of range"
   }
  ]
 }
