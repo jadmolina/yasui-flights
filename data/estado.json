@@ -1,27 +1,27 @@
 {
- "ultima_corrida": "2026-11-11T06:48:42+00:00",
- "segundos": 221,
- "tarifas": 3267,
- "ofertas": 16,
- "personas": 4,
+ "ultima_corrida": "2026-11-11T16:22:10+00:00",
+ "segundos": 210,
+ "tarifas": 3289,
+ "ofertas": 25,
+ "personas": 7,
  "suscriptores": {
   "modo": "supabase",
   "clave": "secreta (sb_secret)",
-  "filas": 4,
+  "filas": 7,
   "de_baja": 0,
   "sin_destinos": 0,
   "sin_email": 0,
-  "personas": 4
+  "personas": 7
  },
  "emails": {
-  "pendientes": 4,
-  "enviados": 4
+  "pendientes": 7,
+  "enviados": 7
  },
  "fuentes": [
   {
    "nombre": "Aviasales",
    "ok": true,
-   "n": 3251,
+   "n": 3277,
    "detalle": ""
   },
   {
@@ -58,7 +58,7 @@
    "nombre": "Google Flights",
    "ok": true,
    "n": 33,
-   "detalle": "HNL 2027-06-18: TypeError: 'NoneType' object is not subscriptable; SAL 2026-11-13: IndexError: list index out of range"
+   "detalle": "33 búsquedas"
   }
  ]
 }
