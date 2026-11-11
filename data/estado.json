@@ -1,8 +1,8 @@
 {
- "ultima_corrida": "2026-11-10T23:00:24+00:00",
- "segundos": 222,
- "tarifas": 3275,
- "ofertas": 13,
+ "ultima_corrida": "2026-11-11T06:48:42+00:00",
+ "segundos": 221,
+ "tarifas": 3267,
+ "ofertas": 16,
  "personas": 4,
  "suscriptores": {
   "modo": "supabase",
@@ -21,7 +21,7 @@
   {
    "nombre": "Aviasales",
    "ok": true,
-   "n": 3258,
+   "n": 3251,
    "detalle": ""
   },
   {
@@ -58,7 +58,7 @@
    "nombre": "Google Flights",
    "ok": true,
    "n": 33,
-   "detalle": "SAL 2026-11-13: IndexError: list index out of range"
+   "detalle": "HNL 2027-06-18: TypeError: 'NoneType' object is not subscriptable; SAL 2026-11-13: IndexError: list index out of range"
   }
  ]
 }
