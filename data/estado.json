@@ -1,8 +1,8 @@
 {
- "ultima_corrida": "2026-11-11T22:53:36+00:00",
- "segundos": 223,
- "tarifas": 3309,
- "ofertas": 27,
+ "ultima_corrida": "2026-11-12T07:26:49+00:00",
+ "segundos": 228,
+ "tarifas": 3294,
+ "ofertas": 22,
  "personas": 12,
  "suscriptores": {
   "modo": "supabase",
@@ -14,14 +14,14 @@
   "personas": 12
  },
  "emails": {
-  "pendientes": 10,
-  "enviados": 10
+  "pendientes": 7,
+  "enviados": 7
  },
  "fuentes": [
   {
    "nombre": "Aviasales",
    "ok": true,
-   "n": 3295,
+   "n": 3277,
    "detalle": ""
   },
   {
@@ -58,7 +58,7 @@
    "nombre": "Google Flights",
    "ok": true,
    "n": 33,
-   "detalle": "HNL 2027-06-25: TypeError: 'NoneType' object is not subscriptable; ORD 2027-04-17: TypeError: 'NoneType' object is not subscriptable"
+   "detalle": "MKE 2027-06-30: TypeError: 'NoneType' object is not subscriptable; ORD 2027-04-17: TypeError: 'NoneType' object is not subscriptable"
   }
  ]
 }
