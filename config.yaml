@@ -69,7 +69,7 @@ reglas:
   factor_error: 0.6          # Precio <= 60% de la meta  -> "Posible error de tarifa"
   millas_minimas_error: 2000 # ...pero solo en vuelos largos (los cortos de Spirit/Frontier bajan así seguido)
   factor_tipico: 1.8         # Si no hay historial, "lo normal" se estima como meta x 1.8 (para los combinados)
-  descuento_ganga: 0.35      # 35% o más bajo lo normal  -> "Ganga"
+  descuento_ganga: 0.35      # 35% o más bajo lo normal  -> "Buen precio"
   descuento_error: 0.50      # 50% o más bajo lo normal  -> "Posible error de tarifa"
   centavos_por_milla: 3.5    # Regla para "a donde sea" (solo destinos a 1,500+ millas)
   factor_solo_ida: 0.55      # Meta de solo ida = meta ida y vuelta x 0.55

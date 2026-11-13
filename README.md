@@ -15,7 +15,7 @@ saliendo de **San Juan (SJU)** hacia esos lugares.
    - **The Flight Deal y Fly4free:** ofertas y errores de tarifa publicados (sus feeds RSS).
    - Todo es por vías permitidas: la API oficial de Aviasales y feeds que los sitios publican.
      Google Flights está apagado (no tiene API oficial); los botones "Google Flights" son solo links.
-   - **Combinados:** ofertas que salen de ciudades de EE.UU. (Miami, Nueva York, Los Ángeles...)
+   - **Ofertas de 2 boletos (combinados):** ofertas que salen de ciudades de EE.UU. (Miami, Nueva York, Los Ángeles...)
      + lo que cuesta llegar desde SJU. Ej.: *SJU → Los Ángeles $289 + Los Ángeles → Osaka $262 = $551*
      (directo desde SJU ~$1,080). El vuelo SJU → ciudad puente tiene que salir 1-2 días antes y regresar
      1-2 días después; si Aviasales no tiene un precio real para esas fechas, el combinado no sale.
@@ -27,7 +27,7 @@ saliendo de **San Juan (SJU)** hacia esos lugares.
 **Qué cuenta como oferta**
 
 - **Posible error de tarifa:** 60% o menos del precio meta, la mitad (o menos) de lo normal, o un sitio lo reportó como error.
-- **Ganga:** debajo del precio meta, o 35%+ más barato que lo normal.
+- **Buen precio:** debajo del precio meta, o 35%+ más barato que lo normal.
 - Los precios meta por región están en `config.yaml`. "Lo normal" se aprende solo con unos 4 días de datos.
 
 ---

@@ -110,7 +110,7 @@ def asunto(ofertas: List[dict]) -> str:
     # La lista va de más barato a más caro, pero el asunto destaca la más loca (posible error primero)
     p = min(ofertas, key=lambda o: (-o["nivel"], o["precio"]))
     tipo = "ida y vuelta" if p["ida_y_vuelta"] else "solo ida"
-    combo = " (combinado)" if p.get("tipo") == "combinado" else ""
+    combo = " (2 boletos)" if p.get("tipo") == "combinado" else ""
     if p.get("tipo") != "combinado" and p.get("origen") and p["origen"] != "SJU":
         combo = f" saliendo de {p.get('origen_nombre') or p['origen']}"
     if p["nivel"] == 3:
@@ -227,7 +227,7 @@ def _fila_combinado(o: dict) -> str:
     aer_t = " · ".join(x for x in [t.get("aerolinea"), t.get("sitio")] if x)
     return f"""
 <tr><td style="padding:14px 16px;border-bottom:1px solid {LINEA}">
-  <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:{color}">Combinado{' · mismo día' if (cx.get('ida') or cx.get('vuelta')) else ''} · {e(o['nivel_nombre'])} · {e(REGIONES.get(o.get('region') or '', ''))}</div>
+  <div style="font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:{color}">2 boletos{' · mismo día' if (cx.get('ida') or cx.get('vuelta')) else ''} · {e(o['nivel_nombre'])} · {e(REGIONES.get(o.get('region') or '', ''))}</div>
   {_titulo_destino(o)}
   <div style="margin-top:4px"><span style="font-size:28px;font-weight:800;color:{color}">{_dinero(o['precio'])}</span>
      <span style="font-size:13px;color:{GRIS}"> total{aprox} ida y vuelta</span></div>
@@ -350,7 +350,7 @@ def cuerpo_texto(ofertas: List[dict], url_sitio: str = "", persona: Optional[dic
         if o.get("tipo") == "combinado":
             p, t = o["puente"], o["tramo"]
             c, d = p["nombre"], o["destino_nombre"]
-            lineas.append(f"[Combinado · {o['nivel_nombre']}] {d}: {_dinero(o['precio'])} total {tipo}")
+            lineas.append(f"[2 boletos · {o['nivel_nombre']}] {d}: {_dinero(o['precio'])} total {tipo}")
             lineas.append(f"   Ida:    {_f(p.get('salida')) or '—'} SJU -> {c} | {_f(t.get('salida')) or '—'} {c} -> {d}")
             lineas.append(f"   Vuelta: {_f(t.get('regreso')) or '—'} {d} -> {c} | {_f(p.get('regreso')) or '—'} {c} -> SJU")
             for lado, cn in (("ida", (p.get("conexion") or {}).get("ida")), ("vuelta", (p.get("conexion") or {}).get("vuelta"))):

@@ -2,7 +2,7 @@
 
 Niveles:
   3 = Posible error de tarifa (mistake fare)
-  2 = Ganga
+  2 = Buen precio
   1 = Oferta publicada por un sitio de ofertas (no tan extrema)
 """
 from __future__ import annotations
@@ -18,7 +18,7 @@ from .models import Tarifa
 from .sources.google_flights import link_google
 from .util import DATA, ahora_iso, guardar_json, horas_desde, hoy_pr, leer_json
 
-NIVELES = {3: "Posible error de tarifa", 2: "Ganga", 1: "Oferta"}
+NIVELES = {3: "Posible error de tarifa", 2: "Buen precio", 1: "Oferta"}
 VERSION_REGLAS = 3  # si cambian las reglas, las ofertas viejas se descartan en vez de arrastrarse
 
 ARCH_HISTORIAL = DATA / "historial.json"
@@ -344,6 +344,7 @@ class Detector:
         lista = list(resultado.values())
         for o in lista:
             o["v"] = VERSION_REGLAS
+            o["nivel_nombre"] = NIVELES.get(o.get("nivel"), o.get("nivel_nombre"))
         lista.sort(key=lambda o: (-o["nivel"], -(o.get("descuento") or 0), o["precio"]))
         return lista
 

@@ -76,6 +76,15 @@ button{font:inherit;color:inherit}
 @keyframes vuela{0%{transform:translate(-55vw,40px) rotate(8deg);opacity:0}15%{opacity:1}100%{transform:translate(55vw,-50px) rotate(-6deg);opacity:1}}
 @keyframes estela{from{stroke-dashoffset:900}to{stroke-dashoffset:0}}
 @keyframes sube{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+/* Nubes que pasan despacio en la entrada */
+.nubes{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden}
+.nube{position:absolute;left:0;height:auto;fill:var(--hero-ink);animation:nube linear infinite;will-change:transform}
+.nube.n1{top:10%;width:250px;opacity:.11;animation-duration:85s;animation-delay:-12s}
+.nube.n2{top:38%;width:170px;opacity:.07;animation-duration:120s;animation-delay:-60s}
+.nube.n3{top:62%;width:320px;opacity:.06;animation-duration:150s;animation-delay:-100s}
+.nube.n4{top:24%;width:130px;opacity:.09;animation-duration:100s;animation-delay:-38s}
+.nube.n5{top:50%;width:210px;opacity:.08;animation-duration:110s;animation-delay:-85s}
+@keyframes nube{from{transform:translateX(-340px)}to{transform:translateX(calc(100vw + 40px))}}
 @keyframes flota{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 #app > *{animation:entra .45s cubic-bezier(.2,.7,.2,1) both}
 #app > *:nth-child(2){animation-delay:.06s}
@@ -360,10 +369,10 @@ footer.pie p{margin:0}
 .monto,.rd .p,.lm .p,.precio .num{font-variant-numeric:lining-nums tabular-nums}
 .monto{font-family:var(--serif);font-weight:600;letter-spacing:0}
 .hero h1,.saludo h1,h2.sec,.panel h2,.card h3,.splash h1,footer.pie h4,.marca{text-transform:uppercase;font-weight:600}
-.hero h1{font-size:clamp(36px,6vw,66px);line-height:.98;letter-spacing:-.01em;font-weight:600}
+.hero h1{font-size:clamp(36px,6vw,66px);line-height:.98;letter-spacing:-.01em;font-weight:600;max-width:940px;text-wrap:balance}
 .saludo h1{font-size:clamp(32px,4.6vw,48px);letter-spacing:0}
 h2.sec{font-size:clamp(30px,3.6vw,42px);line-height:1;margin:4px 0 8px;letter-spacing:0}
-.panel h2{font-size:28px;letter-spacing:0}
+.panel h2{font-size:28px;letter-spacing:0;line-height:1.05}
 .card h3{font-size:27px;letter-spacing:0;line-height:1}
 .marca{font-size:23px;letter-spacing:.05em}
 .splash h1{font-weight:600;letter-spacing:.01em}
@@ -435,6 +444,7 @@ h2.sec{font-size:clamp(30px,3.6vw,42px);line-height:1;margin:4px 0 8px;letter-sp
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important}
   .splash-avion{display:none}
+  .nubes{display:none}
 }
 </style>
 </head>
@@ -677,9 +687,12 @@ function avisosTop(){
   $("#avisos").innerHTML = a.join("");
 }
 
-function hero({ titulo = "", sub = "", menu = false, alto = true, extra = "", ceja = "" } = {}){
+const NUBE = '<path d="M38 72C16 72 8 60 12 50C15 40 26 36 36 38C40 20 58 12 74 18C84 4 108 2 120 16C134 8 156 14 160 32C178 30 192 42 190 56C188 68 176 72 166 72Z"/>';
+const NUBES = `<div class="nubes" aria-hidden="true">${[1, 2, 3, 4, 5].map(n => `<svg class="nube n${n}" viewBox="0 0 200 80">${NUBE}</svg>`).join("")}</div>`;
+function hero({ titulo = "", sub = "", menu = false, alto = true, extra = "", ceja = "", nubes = false } = {}){
   return `<div class="franja"><div class="wrap"><span class="lado">SJU · BQN &rarr; a donde sea</span><span>Buscamos vuelos cada 4 horas<span class="lado"> desde Puerto Rico</span></span><span class="lado">Actualizado ${esc(hace(D.generado))}</span></div></div>
   <header class="hero">
+    ${nubes ? NUBES : ""}
     <svg class="hero-ruta" viewBox="0 0 300 110" aria-hidden="true"><path d="M10 100 C 90 20, 200 10, 290 30"/><g class="av"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" transform="translate(272 18) rotate(70 12 12) scale(.9)"/></g></svg>
     <svg class="hero-montes" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true"><path class="hm1" d="M0 90 L0 50 L140 18 L260 60 L420 10 L560 64 L700 26 L860 70 L1000 20 L1200 58 L1200 90Z"/><path class="hm2" d="M0 90 L0 70 L180 44 L330 80 L520 40 L720 84 L900 52 L1060 80 L1200 64 L1200 90Z"/></svg>
     <div class="wrap">
@@ -703,8 +716,9 @@ function pantallaEntrar(paso = "email", msg = ""){
   const app = $("#app");
   if (paso === "email") {
     app.innerHTML = hero({
-      ceja: "Errores de tarifa · vuelos baratos",
-      titulo: 'Vuelos ridículamente baratos saliendo de Puerto Rico',
+      ceja: "Alertas por email, gratis",
+      titulo: 'Errores de tarifa y vuelos baratos desde PR',
+      nubes: true,
       sub: 'Escoge a dónde quieres ir y te avisamos por email cuando salgan precios locos o errores de tarifa. <span class="kanji">安い</span> <i>yasui</i> = barato en japonés.'
     }) + `
     <section class="centro"><div class="panel">
@@ -734,7 +748,7 @@ function pantallaEntrar(paso = "email", msg = ""){
     return;
   }
   // paso: código
-  app.innerHTML = hero({ titulo: "Revisa tu email", sub: `Te mandamos un código a <b>${esc(E.email)}</b>.` }) + `
+  app.innerHTML = hero({ nubes: true, titulo: "Revisa tu email", sub: `Te mandamos un código a <b>${esc(E.email)}</b>.` }) + `
     <section class="centro"><div class="panel">
       <h2>Escribe el código</h2>
       <p>Es un código de números. Se vence en unos minutos y sirve una sola vez.${PRUEBA ? " <b>(Modo prueba: 123456)</b>" : ""}</p>
@@ -976,7 +990,7 @@ function tarjeta(o, i = 0){
       : "Boletos separados: por eso llegas un día antes.";
     return `<article class="card n${o.nivel}" style="--i:${Math.min(i, 8)}">
       ${postal(o.region)}
-      <div class="top"><span class="badges"><span class="badge combo">Combinado</span>${cx.ida || cx.vuelta ? `<span class="badge md">Mismo día</span>` : ""}<span class="badge niv">${esc(o.nivel_nombre)}</span></span></div>
+      <div class="top"><span class="badges"><span class="badge combo">2 boletos</span>${cx.ida || cx.vuelta ? `<span class="badge md">Mismo día</span>` : ""}<span class="badge niv">${esc(o.nivel_nombre)}</span></span></div>
       ${titulo}
       <div class="precio"><span class="monto num">${dinero(o.precio)}</span><span class="tipo">total${p.exacto ? "" : " aprox."} ida y vuelta</span></div>
       ${comp ? `<div class="comp">${comp}</div>` : ""}
@@ -1060,7 +1074,7 @@ function tarjetaRadar(d){
     precio = mejorPrecio(d);
     info = d.c === "*" ? "Te avisamos de cualquier error de tarifa" : "mejor precio en esa zona";
   }
-  if (mejor && (precio == null || mejor.precio <= precio)) { precio = mejor.precio; link = mejor.tipo === "combinado" ? mejor.tramo.link : mejor.link_google; info = `${mejor.destino_nombre}${mejor.tipo === "combinado" ? " (combinado)" : ""}`; }
+  if (mejor && (precio == null || mejor.precio <= precio)) { precio = mejor.precio; link = mejor.tipo === "combinado" ? mejor.tramo.link : mejor.link_google; info = `${mejor.destino_nombre}${mejor.tipo === "combinado" ? " (2 boletos)" : ""}`; }
   return `<div class="rd">
     <div class="t"><span>${esc(nombreDestino(d))}</span>${d.t !== "c" && !["todo", "*"].includes(d.c) ? `<small>${d.t === "p" ? "país" : "región"}</small>` : ""}</div>
     ${mejor ? `<span class="hay">${ofertas.length} oferta${ofertas.length > 1 ? "s" : ""}</span>` : ""}
@@ -1096,7 +1110,7 @@ function pantallaOfertas(){
     <footer class="pie">
       <div><h4>Reserva primero, planifica después</h4><p>Desde Puerto Rico aplica la regla de 24 horas del DOT: si reservas con 7+ días de anticipación, puedes cancelar gratis dentro de 24 horas.</p></div>
       <div><h4>No compres hotel todavía</h4><p>Espera a que la aerolínea emita el boleto. A veces cancelan los errores de tarifa.</p></div>
-      <div><h4>Combinados</h4><p>Son boletos separados: si el primer vuelo se atrasa, la otra aerolínea no te ayuda. Llega un día antes.</p></div>
+      <div><h4>Ofertas de 2 boletos</h4><p>Son boletos separados: si el primer vuelo se atrasa, la otra aerolínea no te ayuda. Llega un día antes.</p></div>
     </footer>
     <div class="baja-zona" id="baja-zona">
       <span>¿Ya no quieres recibir emails?</span> <button class="link" id="b-baja">Darme de baja</button>
