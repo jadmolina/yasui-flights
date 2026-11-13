@@ -17,10 +17,8 @@ DATA = RAIZ / "data"
 CACHE = DATA / "cache"
 DOCS = RAIZ / "docs"
 
-USER_AGENT = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/130.0 Safari/537.36"
-)
+# Nos identificamos como lo que somos: un buscador de ofertas (no nos hacemos pasar por un navegador)
+USER_AGENT = "YasuiFlights/1.0 (alertas de vuelos baratos; +https://github.com/jadmolina/yasui-flights)"
 
 
 def log(msg: str) -> None:

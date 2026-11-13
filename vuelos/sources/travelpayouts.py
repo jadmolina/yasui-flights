@@ -159,6 +159,47 @@ class Travelpayouts:
         log(f"  Travelpayouts desde {origen}: {len(tarifas)} precios ({self.llamadas - antes} llamadas)")
         return tarifas
 
+    def buscar_fechas(self, pedidos: List[dict], maximo_llamadas: int = 30) -> List[Tarifa]:
+        """Para la gente que puso fechas: busca esas fechas a propósito.
+        pedidos: [{"s": "2027-03-10", "r": "2027-03-20" o None, "x": 1, "ciudades": ["TYO"], "otros": True}]
+        ("otros" = también escogió países, regiones o 'a donde sea')."""
+        antes = self.llamadas
+        vistos = set()
+        tarifas: List[Tarifa] = []
+
+        def pedir(rt: bool, **params) -> None:
+            clave = (rt,) + tuple(sorted((k, v) for k, v in params.items() if v is not None))
+            if clave in vistos or self.llamadas - antes >= maximo_llamadas:
+                return
+            vistos.add(clave)
+            for fila in self._get(**params):
+                t = self._convertir(fila, rt)
+                if t.precio > 0 and t.destino and t.destino != self.origen:
+                    tarifas.append(t)
+
+        for p in pedidos:
+            s = date.fromisoformat(p["s"])
+            if s < date.today():
+                continue
+            r, x = p.get("r"), int(p.get("x") or 0)
+            meses = sorted({(s - timedelta(days=x)).strftime("%Y-%m"), (s + timedelta(days=x)).strftime("%Y-%m")})
+            # 1) a donde sea, ese mismo día (con el regreso exacto si lo puso)
+            pedir(True, departure_at=p["s"], return_at=r, one_way="false", unique="true")
+            if not r:
+                pedir(False, departure_at=p["s"], one_way="true", unique="true")
+            # 2) a donde sea, todo el mes (para el margen de ±días), si escogió países/regiones/cualquier lugar
+            if p.get("otros"):
+                for mes in meses:
+                    pedir(True, departure_at=mes, one_way="false", limit=1000)
+            # 3) sus ciudades, todo el mes: trae muchas combinaciones de fechas y nos quedamos con las que cuadren
+            for c in p.get("ciudades") or []:
+                for mes in meses:
+                    pedir(True, destination=c, departure_at=mes, one_way="false", limit=300)
+                    if not r:
+                        pedir(False, destination=c, departure_at=mes, one_way="true", limit=300)
+        log(f"  Travelpayouts (fechas que puso la gente): {len(tarifas)} precios ({self.llamadas - antes} llamadas)")
+        return tarifas
+
     def buscar_puentes(self, puentes: List[dict]) -> List[Tarifa]:
         """Lo más barato a cada destino saliendo de ciudades grandes de EE.UU. (ida y vuelta)."""
         antes = self.llamadas

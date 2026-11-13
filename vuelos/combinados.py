@@ -153,7 +153,8 @@ class Combinador:
                 ofertas[clave] = o
         lista = list(ofertas.values())
         if candidatos:
-            log(f"  Combinados: {len(lista)} ofertas ({len(candidatos)} candidatos; {google} revisados en Google; "
+            en_google = f"{google} revisados en Google; " if google else ""
+            log(f"  Combinados: {len(lista)} ofertas ({len(candidatos)} candidatos; {en_google}"
                 f"{sin_fechas} descartados porque el vuelo desde SJU no cuadraba con las fechas)")
         return lista
 

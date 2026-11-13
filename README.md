@@ -12,12 +12,13 @@ saliendo de **San Juan (SJU)** hacia esos lugares.
    Al guardar ve la pantalla de **¡Listo!**
 3. **Cada 4 horas** GitHub corre el buscador:
    - **Aviasales (Travelpayouts):** lo más barato desde SJU a todos lados + cada destino que la gente escogió.
-   - **Google Flights:** precios reales y confirma las ofertas.
-   - **Secret Flying, The Flight Deal, Fly4free, r/flightdeals:** errores de tarifa publicados.
+   - **The Flight Deal y Fly4free:** ofertas y errores de tarifa publicados (sus feeds RSS).
+   - Todo es por vías permitidas: la API oficial de Aviasales y feeds que los sitios publican.
+     Google Flights está apagado (no tiene API oficial); los botones "Google Flights" son solo links.
    - **Combinados:** ofertas que salen de ciudades de EE.UU. (Miami, Nueva York, Los Ángeles...)
      + lo que cuesta llegar desde SJU. Ej.: *SJU → Los Ángeles $289 + Los Ángeles → Osaka $262 = $551*
      (directo desde SJU ~$1,080). El vuelo SJU → ciudad puente tiene que salir 1-2 días antes y regresar
-     1-2 días después; si no hay un precio real para esas fechas (Aviasales o Google Flights), el combinado no sale.
+     1-2 días después; si Aviasales no tiene un precio real para esas fechas, el combinado no sale.
      Siempre avisa que son boletos separados, y si hay que cambiar de aeropuerto.
 4. **Emails:** cada persona recibe su propio email (nadie ve a los demás) desde yasuiflights@gmail.com,
    solo con lo de sus destinos. El primero es de bienvenida con los precios de hoy. No se repite la misma
@@ -124,7 +125,7 @@ cuántos emails/ofertas, fuentes.
   Llega un día antes.
 - Gmail deja mandar ~500 emails al día; sobra para familia y amigos.
 - Supabase pausa proyectos gratis después de 7 días sin uso; como el buscador lo usa cada 4 horas, no pasa.
-- Google Flights no tiene API oficial; si bloquea, esa corrida sigue con lo demás.
+- Google Flights, Secret Flying y Reddit no se usan: no permiten buscar con programas.
 
 ## Archivos
 

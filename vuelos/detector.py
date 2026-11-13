@@ -42,6 +42,43 @@ def coincide(o: dict, destinos: list) -> bool:
     return False
 
 
+def fechas_de(destinos: Optional[list]) -> Optional[dict]:
+    """Las fechas que la persona puso (opcional). Vienen dentro de destinos como
+    {"t": "f", "s": "2027-03-10", "r": "2027-03-20" o None, "x": 0 | 1 | 3 (días de margen)}."""
+    for d in destinos or []:
+        if d.get("t") == "f" and d.get("s"):
+            try:
+                x = max(0, min(7, int(d.get("x") or 0)))
+            except (TypeError, ValueError):
+                x = 0
+            return {"s": str(d["s"])[:10], "r": (str(d["r"])[:10] if d.get("r") else None), "x": x}
+    return None
+
+
+def en_fechas(o: dict, f: Optional[dict]) -> bool:
+    """¿Esta oferta cuadra con las fechas de la persona? Sin fechas, todo cuadra.
+    En un combinado cuenta cuándo sales de SJU (el primer vuelo)."""
+    if not f:
+        return True
+    combo = o.get("puente") if o.get("tipo") == "combinado" else None
+    sale = (combo or {}).get("salida") or o.get("salida")
+    vuelve = (combo or {}).get("regreso") or o.get("regreso")
+    if not sale:
+        return False  # posts sin fechas: no sabemos si cuadra
+
+    def cerca(a: str, b: str) -> bool:
+        try:
+            return abs((date.fromisoformat(a[:10]) - date.fromisoformat(b[:10])).days) <= f["x"]
+        except ValueError:
+            return False
+
+    if not cerca(sale, f["s"]):
+        return False
+    if f.get("r") and (not o.get("ida_y_vuelta") or not vuelve or not cerca(vuelve, f["r"])):
+        return False
+    return True
+
+
 def _slug(texto: str) -> str:
     return re.sub(r"[^A-Za-z0-9]+", "-", texto or "").strip("-").upper()[:24] or "X"
 
@@ -248,6 +285,32 @@ class Detector:
                 por_destino[k].append(o)
         return [o for lista in por_destino.values() for o in lista]
 
+    def ofertas_con_fechas(self, tarifas: List[Tarifa], personas: List[dict], maximo_por_persona: int = 20) -> List[dict]:
+        """Para la gente que puso fechas: las mejores ofertas a SUS destinos en ESAS fechas.
+        En la lista normal se queda solo lo más barato de cada mes, y eso puede ser otro día."""
+        nuevas: Dict[str, dict] = {}
+        for p in personas:
+            f = fechas_de(p.get("destinos"))
+            if not f:
+                continue
+            lugares = [d for d in p.get("destinos") or [] if d.get("t") != "f"]
+            por_destino: Dict[tuple, List[dict]] = {}
+            for t in tarifas:
+                if t.puente or t.alterno or t.fuente == "feed":
+                    continue
+                if not en_fechas({"salida": t.salida, "regreso": t.regreso, "ida_y_vuelta": t.ida_y_vuelta}, f):
+                    continue
+                if not coincide({"destino": t.destino, "aeropuerto": t.aeropuerto, "pais": t.pais, "region": t.region,
+                                 "nivel": 3 if t.es_error else 0}, lugares):
+                    continue
+                o = self.evaluar(t)
+                if o:
+                    por_destino.setdefault((t.destino, t.ida_y_vuelta), []).append(o)
+            mejores = [o for lista in por_destino.values() for o in sorted(lista, key=lambda o: o["precio"])[:2]]
+            for o in sorted(mejores, key=lambda o: o["precio"])[:maximo_por_persona]:
+                nuevas[o["id"]] = o
+        return list(nuevas.values())
+
     # ============================================================ combinar con lo anterior
     def combinar(self, nuevas: List[dict]) -> List[dict]:
         previas = {o["id"]: o for o in self.previas}
@@ -310,6 +373,7 @@ class Detector:
         dias = float(conf.get("dias_para_repetir", 14))
         bajada = float(conf.get("bajada_para_repetir", 0.10))
         avisados = self.avisados if avisados is None else avisados
+        fechas = fechas_de(destinos)
         elegidas: Dict[str, dict] = {}
         for o in ofertas:
             if o["nivel"] < minimo or (solo_nuevas and o.get("ultima_vez") != self.corrida):
@@ -318,6 +382,8 @@ class Detector:
                 continue  # Google dice que ya no está a ese precio
             if destinos and not coincide(o, destinos):
                 continue
+            if not en_fechas(o, fechas):
+                continue  # puso fechas y esta oferta es para otras
             k = self.clave_aviso(o)
             prev = avisados.get(k)
             if prev and horas_desde(prev.get("fecha")) < dias * 24 and o["precio"] > prev["precio"] * (1 - bajada):
@@ -325,7 +391,7 @@ class Detector:
             if k not in elegidas or o["precio"] < elegidas[k]["precio"]:
                 elegidas[k] = o
         lista = list(elegidas.values())
-        lista.sort(key=lambda o: (-o["nivel"], -(o.get("descuento") or 0), o["precio"]))
+        lista.sort(key=lambda o: (o["precio"], -o["nivel"]))  # de más barato a más caro
         return lista
 
     def marcar_avisados(self, ofertas: List[dict], avisados: Optional[Dict[str, dict]] = None) -> Dict[str, dict]:

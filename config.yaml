@@ -82,6 +82,7 @@ travelpayouts:
   activo: true
   meses_a_buscar: 8          # Cuántos meses hacia adelante escanea "a donde sea"
   maximo_destinos: 70        # Máximo de ciudades (tuyas + de los usuarios) que busca una por una en cada corrida
+  llamadas_fechas: 30        # Máximo de búsquedas extra para la gente que puso fechas
 
 # ------------------------------------------------------------
 # Combinados: ofertas que salen de una ciudad de EE.UU. ("puente")
@@ -112,9 +113,12 @@ combinados:
     - { nombre: "Los Ángeles",     ciudad: LAX, aeropuerto: LAX }
     - { nombre: "San Francisco",   ciudad: SFO, aeropuerto: SFO }
 
+# APAGADO: Google Flights no tiene API oficial y sus reglas no permiten buscar con programas.
+# (Los botones "Google Flights" de cada oferta son solo links que abre la persona: eso sí está bien.)
 google_flights:
+  activo: false
   escala_corta_minutos: 90   # escalas de 90 min o menos salen con aviso ("llegas 5:00, sales 6:00")
-  activo: true
+  busquedas_fechas: 6        # Búsquedas en Google para las fechas exactas que puso la gente
   busquedas_por_corrida: 10  # Fechas al azar en tus favoritos, cada vez que corre
   verificar_ofertas: 15      # Cuántas ofertas confirma en Google Flights por corrida
   dias_de_viaje: [5, 7, 10]  # Duración de los viajes que prueba
@@ -124,12 +128,11 @@ google_flights:
 feeds:
   activo: true
   dias_a_mostrar: 10
+  # Solo feeds RSS que los sitios publican para que la gente se suscriba.
+  # (Secret Flying nos bloquea y Reddit no permite acceso automático desde 2024: no se usan.)
   lista:
-    - { nombre: "Secret Flying (San Juan)", url: "https://www.secretflying.com/posts/category/cities-countries/puerto-rico/san-juan/feed/" }
-    - { nombre: "Secret Flying",            url: "https://www.secretflying.com/feed/" }
     - { nombre: "The Flight Deal",          url: "https://www.theflightdeal.com/feed/" }
     - { nombre: "Fly4free",                 url: "https://www.fly4free.com/feed/" }
-    - { nombre: "r/flightdeals",            url: "https://www.reddit.com/r/flightdeals/.rss" }
 
 # ------------------------------------------------------------
 # La página y los emails
@@ -143,3 +146,5 @@ email:
   nivel_minimo: 2            # 3 = solo posibles errores, 2 = errores + gangas, 1 = todo
   dias_para_repetir: 14      # No repite la misma oferta antes de esto...
   bajada_para_repetir: 0.10  # ...a menos que baje otro 10% o más
+  aviso_registros: true      # Cuando alguien nuevo se registra, manda un email con su nombre y email
+  aviso_registros_a: ""      # A quién le llega ese aviso (vacío = al mismo Gmail de Yasui Flights)

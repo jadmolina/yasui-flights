@@ -8,7 +8,7 @@
 <script>try{var t=localStorage.getItem("yasui_tema");if(t==="claro"||t==="oscuro")document.documentElement.dataset.tema=t;}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%238A6240' d='M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z'/%3E%3C/svg%3E">
 <style>
 /* =====================================================================
@@ -26,7 +26,7 @@
   --sea1:#7C9672; --sea2:#4C6444; --sand:#B79F7A; --cloud:#FBF8F2;
   --shadow:0 1px 2px rgba(16,40,32,.06),0 8px 24px rgba(16,40,32,.08);
   --shadow-up:0 6px 14px rgba(16,40,32,.10),0 22px 44px rgba(16,40,32,.14);
-  --radius:18px; --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --radius:18px; --serif:"Cormorant Garamond",Georgia,"Times New Roman",serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
@@ -278,7 +278,9 @@ h2.sec{font-family:var(--serif);font-size:24px;margin:34px 0 4px;letter-spacing:
 .bol small{grid-column:2 / -1;color:var(--muted);font-size:12px;margin-top:-2px}
 .ojo{font-size:12.5px;color:var(--warn);background:var(--warn-soft);border-radius:10px;padding:7px 10px}
 .verif{font-size:12.5px;padding:6px 10px;border-radius:10px;background:var(--bg2)}
-.verif.si{color:var(--ok)} .verif.no{color:var(--warn)}
+.verif.si{color:var(--ok);display:flex;align-items:center;gap:6px}
+.verif.si svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.verif.no{color:var(--warn)}
 .motivos{font-size:12.5px;color:var(--muted);margin:0}
 .titulo{font-size:12.5px;color:var(--muted);margin:0;font-style:italic}
 .acciones{display:flex;gap:8px;margin-top:auto;padding-top:6px;flex-wrap:wrap}
@@ -310,6 +312,125 @@ footer.pie p{margin:0}
   .menu{flex-wrap:nowrap;gap:4px}
   .menu button{padding:6px 10px;font-size:12.5px}
   .tema{width:32px;height:32px}
+}
+/* Fechas (opcional) */
+.fechas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fechas label{display:grid;gap:5px;font-size:13px;font-weight:650;min-width:0}
+.fechas input[type=date]{width:100%;min-width:0;box-sizing:border-box;-webkit-appearance:none;appearance:none}
+.fechas label small{font-weight:400;color:var(--muted)}
+.fechas input[type=date]{min-height:46px}
+.nota-f{font-size:13.5px;color:var(--muted);margin:-2px 0 10px}
+.f-flex{margin-top:10px}
+.f-resumen{display:inline-flex;align-items:center;gap:8px;background:var(--acc-soft);color:var(--ink);border-radius:12px;padding:8px 12px;font-size:14px;font-weight:600;margin:0 0 14px}
+.f-resumen svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:.7}
+
+/* Celular: letra más grande para que se lea fácil */
+@media (max-width:720px){
+  body{font-size:17px}
+  label.campo,.fechas label{font-size:15px}
+  input.txt{font-size:17px}
+  .btn{font-size:16px}
+  .nota,.error,.ok-txt,.caja,.h2sub,.todo-card small,.vacio-sel,.puntos li,.nota-f,.f-resumen{font-size:15.5px}
+  .sug small,.sug .desde,.sug .ya,.contador,.o-separador{font-size:14.5px}
+  .grupo h3{font-size:13.5px}
+  .chip{font-size:15.5px;padding:9px 15px}
+  .elegido{font-size:15.5px}
+  .badge{font-size:12.5px;padding:5px 11px}
+  .reg,.code{font-size:13.5px}
+  .card h3{font-size:24px}
+  .pais,.tipo{font-size:15px}
+  .comp,.det,.boletos,.itin-r{font-size:16px}
+  .itin-h{font-size:12.5px}
+  .itin-r{grid-template-columns:70px 1fr}
+  .itin-con{font-size:14.5px;margin-left:78px}
+  .itin-nota,.boletos-h,.bol small{font-size:14px}
+  .ojo,.verif,.motivos,.titulo{font-size:15px}
+  .acciones .btn{font-size:15.5px;padding:12px 10px}
+  .rd .t{font-size:16px}
+  .rd .d,.rd a{font-size:14.5px}
+  .rd .hay,.rd .t small{font-size:12.5px}
+  footer.pie,.baja-zona{font-size:15.5px}
+  .monto{font-size:38px}
+}
+@media (max-width:420px){ .fechas{grid-template-columns:1fr} }
+/* =====================================================================
+   Estilo "elegante" (inspirado en restaurantes finos): títulos en mayúscula con
+   Cormorant Garamond, etiquetas pequeñas encima, botones rectos y líneas finas.
+   ===================================================================== */
+.monto,.rd .p,.lm .p,.precio .num{font-variant-numeric:lining-nums tabular-nums}
+.monto{font-family:var(--serif);font-weight:600;letter-spacing:0}
+.hero h1,.saludo h1,h2.sec,.panel h2,.card h3,.splash h1,footer.pie h4,.marca{text-transform:uppercase;font-weight:600}
+.hero h1{font-size:clamp(36px,6vw,66px);line-height:.98;letter-spacing:-.01em;font-weight:600}
+.saludo h1{font-size:clamp(32px,4.6vw,48px);letter-spacing:0}
+h2.sec{font-size:clamp(30px,3.6vw,42px);line-height:1;margin:4px 0 8px;letter-spacing:0}
+.panel h2{font-size:28px;letter-spacing:0}
+.card h3{font-size:27px;letter-spacing:0;line-height:1}
+.marca{font-size:23px;letter-spacing:.05em}
+.splash h1{font-weight:600;letter-spacing:.01em}
+.ceja{display:block;font-size:12px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--acc);margin:40px 0 8px}
+.hero .ceja{color:var(--hero-acc);margin:22px 0 -6px}
+.panel .ceja{margin:0 0 8px}
+/* franja de arriba */
+.franja{background:var(--acc);color:var(--acc-ink);font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase}
+.franja .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:8px;padding-bottom:8px}
+.franja .lado{opacity:.85;white-space:nowrap}
+.franja span .lado{opacity:1}
+/* botones, chips y etiquetas rectos */
+.btn{border-radius:0;text-transform:uppercase;letter-spacing:.14em;font-size:13px;font-weight:700;padding:13px 20px}
+.btn,.btn.pri,.btn.osc{box-shadow:none}
+.btn:not(.pri):not(.osc){background:transparent;border:1px solid var(--acc);color:var(--ink)}
+.acciones .btn{border-radius:0;font-size:12px;letter-spacing:.12em}
+@media (hover:hover){
+  .btn.pri:hover:not([disabled]),.btn.osc:hover:not([disabled]){box-shadow:0 10px 22px rgba(0,0,0,.14)}
+  .btn:not(.pri):not(.osc):hover:not([disabled]){background:var(--acc);color:var(--acc-ink)}
+}
+.btn.pri:active:not([disabled]),.btn.osc:active:not([disabled]){box-shadow:none}
+.chip,.badge,.elegido,.menu button,.tema,input.txt,.todo-card,.f-resumen,.caja,.ojo,.verif,.itin,.sugerencias{border-radius:0}
+.chip{border:1px solid var(--line);background:transparent}
+.chip.on{background:var(--chip-on);color:var(--chip-on-ink);border-color:var(--chip-on)}
+.panel,.card,.rd{border-radius:2px}
+.card .postal,.card .postal svg{border-radius:0}
+/* tarjetas / lista */
+.vistas{display:flex;gap:0;margin:0 0 16px}
+.vistas button{font:inherit;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;padding:10px 18px;background:transparent;color:var(--ink);border:1px solid var(--acc);cursor:pointer}
+.vistas button + button{border-left:0}
+.vistas button.on{background:var(--acc);color:var(--acc-ink)}
+.lista-menu{display:grid;grid-template-columns:1fr 1fr;column-gap:56px;row-gap:6px}
+.lm{border:0}
+.lm summary{list-style:none;cursor:pointer;padding:16px 0 12px}
+.lm summary::-webkit-details-marker{display:none}
+.lm .arriba{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.lm .n{font-family:var(--serif);font-size:24px;font-weight:600;text-transform:uppercase;line-height:1.05;flex:1;min-width:0}
+.lm .n small{font-family:inherit;font-size:15px;color:var(--muted);text-transform:none;font-weight:500;margin-left:6px}
+.lm .p{font-variant-numeric:lining-nums tabular-nums;font-family:var(--serif);font-size:28px;font-weight:600;color:var(--precio);white-space:nowrap}
+.lm .abajo{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:14px;color:var(--muted);margin-top:8px}
+.lm .abajo .badge{font-size:10.5px;padding:3px 8px}
+.lm .ver{margin-left:auto;width:11px;height:11px;border-right:1.5px solid var(--acc);border-bottom:1.5px solid var(--acc);transform:rotate(45deg) translateY(-3px);transition:transform .25s ease}
+.lm[open] .ver{transform:rotate(-135deg) translateY(-3px)}
+.lm .card{margin:6px 0 18px}
+@media (hover:hover){.lm summary:hover .n{color:var(--acc)}}
+@media (max-width:720px){
+  body{font-size:17.5px}
+  .lista-menu{grid-template-columns:1fr}
+  .lm .n{font-size:29px} .lm .n small{font-size:16px} .lm .p{font-size:33px} .lm .abajo{font-size:16.5px}
+  .franja{font-size:12.5px}
+  .franja .lado{display:none}
+  .franja .wrap{justify-content:center;text-align:center}
+  .hero h1{font-size:40px}
+  .saludo h1{font-size:40px}
+  h2.sec{font-size:38px}
+  .panel h2{font-size:31px}
+  .card h3{font-size:31px}
+  .monto{font-size:46px}
+  .pais,.tipo{font-size:16.5px}
+  .comp,.det,.itin-r,.boletos{font-size:17px}
+  .ojo,.verif{font-size:16px}
+  .badge{font-size:13px}
+  .btn{font-size:14.5px;padding:15px 20px}
+  .acciones .btn{font-size:13.5px;padding:14px 10px}
+  .ceja{font-size:13.5px}
+  .rd .t{font-size:17.5px} .rd .p{font-size:25px}
+  .h2sub{font-size:16.5px}
 }
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-delay:0s !important;transition-duration:.01ms !important}
@@ -345,7 +466,7 @@ const CFG = D.config || {};
 const REGIONES = {japon:"Japón",hawaii:"Hawaii",usa:"EE.UU.",canada:"Canadá",europa:"Europa",caribe:"Caribe",latinoamerica:"Latinoamérica",asia:"Asia",oceania:"Oceanía",medio_oriente_africa:"Medio Oriente y África",otros:"Otros","*":"Cualquier error de tarifa",todo:"Cualquier destino"};
 const REGION_RAPIDA = ["japon","hawaii","europa","usa","canada","caribe","latinoamerica","asia","*"];
 const TODO = { t: "r", c: "todo", n: "Cualquier destino" };
-const MAX_DESTINOS = 40;
+const MAX_DESTINOS = 39;  // la base de datos guarda hasta 40 cosas: 39 lugares + las fechas
 
 /* ------------------------------------------------------------ utilidades */
 const $ = s => document.querySelector(s);
@@ -392,7 +513,7 @@ const botonTema = () => { const o = temaActual() === "oscuro"; return `<button c
 /* ------------------------------------------------------------ logos de aerolíneas */
 function LOGO(iata, nombre){
   if (/^[A-Z0-9]{2}$/.test(iata || ""))
-    return `<span class="logo" title="${esc(nombre || iata)}"><img src="https://img.wway.io/pics/root/${iata}@png?exar=1&rs=fit:64:64" alt="" loading="lazy" onerror="this.parentNode.classList.add('sin');this.parentNode.textContent='${iata}'"></span>`;
+    return `<span class="logo" title="${esc(nombre || iata)}"><img src="https://pics.avs.io/64/64/${iata}.png" alt="" loading="lazy" onerror="this.parentNode.classList.add('sin');this.parentNode.textContent='${iata}'"></span>`;
   const ini = String(nombre || "?").replace(/[^A-Za-z ]/g, "").split(" ").filter(Boolean).map(w => w[0]).join("").slice(0, 2).toUpperCase() || "✈";
   return `<span class="logo sin">${esc(ini)}</span>`;
 }
@@ -485,6 +606,26 @@ function coincide(o, destinos){
   return false;
 }
 
+/* ------------------------------------------------------------ fechas (opcional, una para todos los destinos)
+   Se guardan dentro de "destinos" como {t:"f", s:"2027-03-10", r:"2027-03-20" o null, x: 0|1|3} */
+const HOY = new Date().toISOString().slice(0, 10);
+const separarFechas = lista => ({ lugares: (lista || []).filter(d => d.t !== "f"), fechas: (lista || []).find(d => d.t === "f" && d.s) || null });
+function enFechas(o, f){
+  if (!f || !f.s) return true;
+  const combo = o.tipo === "combinado" && o.puente;
+  const sale = (combo && o.puente.salida) || o.salida, vuelve = (combo && o.puente.regreso) || o.regreso;
+  if (!sale) return false;  // posts sin fechas: no sabemos si cuadra
+  const x = +f.x || 0, cerca = (a, b) => Math.abs((new Date(String(a).slice(0, 10)) - new Date(b)) / 864e5) <= x;
+  if (!cerca(sale, f.s)) return false;
+  if (f.r && (!o.ida_y_vuelta || !vuelve || !cerca(vuelve, f.r))) return false;
+  return true;
+}
+function textoFechas(f){
+  if (!f || !f.s) return "";
+  const flex = { 0: "fechas exactas", 1: "±1 día", 3: "±3 días" }[+f.x || 0] || `±${f.x} días`;
+  return (f.r ? `${fmtFecha(f.s)} → ${fmtFecha(f.r)}` : `Salgo ${fmtFecha(f.s)}`) + ` · ${flex}`;
+}
+
 /* ------------------------------------------------------------ cuentas: Supabase o modo prueba */
 let sb = null;
 try {
@@ -527,7 +668,7 @@ const Cuenta = PRUEBA ? {
 };
 
 /* ------------------------------------------------------------ estado */
-const E = { user: null, perfil: null, email: leerLocal("yasui_ultimo_email", ""), sel: [], nombre: "", verTodas: false };
+const E = { user: null, perfil: null, email: leerLocal("yasui_ultimo_email", ""), sel: [], fechas: null, nombre: "", verTodas: false };
 
 function avisosTop(){
   const a = [];
@@ -536,8 +677,9 @@ function avisosTop(){
   $("#avisos").innerHTML = a.join("");
 }
 
-function hero({ titulo = "", sub = "", menu = false, alto = true, extra = "" } = {}){
-  return `<header class="hero">
+function hero({ titulo = "", sub = "", menu = false, alto = true, extra = "", ceja = "" } = {}){
+  return `<div class="franja"><div class="wrap"><span class="lado">SJU · BQN &rarr; a donde sea</span><span>Buscamos vuelos cada 4 horas<span class="lado"> desde Puerto Rico</span></span><span class="lado">Actualizado ${esc(hace(D.generado))}</span></div></div>
+  <header class="hero">
     <svg class="hero-ruta" viewBox="0 0 300 110" aria-hidden="true"><path d="M10 100 C 90 20, 200 10, 290 30"/><g class="av"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" transform="translate(272 18) rotate(70 12 12) scale(.9)"/></g></svg>
     <svg class="hero-montes" viewBox="0 0 1200 90" preserveAspectRatio="none" aria-hidden="true"><path class="hm1" d="M0 90 L0 50 L140 18 L260 60 L420 10 L560 64 L700 26 L860 70 L1000 20 L1200 58 L1200 90Z"/><path class="hm2" d="M0 90 L0 70 L180 44 L330 80 L520 40 L720 84 L900 52 L1060 80 L1200 64 L1200 90Z"/></svg>
     <div class="wrap">
@@ -548,6 +690,7 @@ function hero({ titulo = "", sub = "", menu = false, alto = true, extra = "" } =
         ${botonTema()}
       </div>
     </div>
+    ${ceja ? `<span class="ceja">${ceja}</span>` : ""}
     ${titulo ? `<h1>${titulo}</h1>` : ""}
     ${sub ? `<p class="sub">${sub}</p>` : ""}
     ${extra}
@@ -560,6 +703,7 @@ function pantallaEntrar(paso = "email", msg = ""){
   const app = $("#app");
   if (paso === "email") {
     app.innerHTML = hero({
+      ceja: "Errores de tarifa · vuelos baratos",
       titulo: 'Vuelos ridículamente baratos saliendo de Puerto Rico',
       sub: 'Escoge a dónde quieres ir y te avisamos por email cuando salgan precios locos o errores de tarifa. <span class="kanji">安い</span> <i>yasui</i> = barato en japonés.'
     }) + `
@@ -574,7 +718,7 @@ function pantallaEntrar(paso = "email", msg = ""){
       </form>
       <ul class="puntos">
         <li><i>1</i><span><b>Escoge tus destinos.</b> Japón, Madrid, Hawaii... o "cualquier error de tarifa".</span></li>
-        <li><i>2</i><span><b>Buscamos cada 4 horas</b> en Aviasales, Google Flights y sitios de mistake fares.</span></li>
+        <li><i>2</i><span><b>Buscamos cada 4 horas</b> en Aviasales y en sitios de ofertas y errores de tarifa.</span></li>
         <li><i>3</i><span><b>Te escribimos solo cuando sale algo bueno.</b> Te puedes dar de baja cuando quieras.</span></li>
       </ul>
     </div></section>`;
@@ -628,21 +772,23 @@ function pantallaEntrar(paso = "email", msg = ""){
 
 async function despuesDeEntrar(){
   try { E.perfil = await Cuenta.perfil(E.user); } catch (err) { E.perfil = null; console.error(err); }
-  E.sel = (E.perfil && E.perfil.destinos) ? E.perfil.destinos.slice() : [];
+  const sep = separarFechas(E.perfil && E.perfil.destinos);
+  E.sel = sep.lugares.slice(); E.fechas = sep.fechas ? { ...sep.fechas } : null;
   E.nombre = (E.perfil && E.perfil.nombre) || "";
   if (!E.perfil || !E.perfil.activo || !E.sel.length) pantallaDestinos(); else pantallaOfertas();
 }
 
 /* ============================================================ PANTALLA: destinos */
 function pantallaDestinos(){
-  const nuevo = !(E.perfil && E.perfil.activo && (E.perfil.destinos || []).length);
+  const nuevo = !(E.perfil && E.perfil.activo && separarFechas(E.perfil.destinos).lugares.length);
   $("#app").innerHTML = hero({
     menu: !nuevo,
+    ceja: "Tus destinos",
     titulo: "¿A dónde quieres ir?",
-    sub: "Escoge ciudades, países o regiones. Te avisamos de los mejores precios y errores de tarifa saliendo de San Juan (y de Aguadilla cuando sale mucho más barato) para esos lugares."
+    sub: "Escoge ciudades, países o regiones y te avisamos cuando salga algo bueno desde Puerto Rico."
   }) + `
   <section class="centro ancho"><div class="panel">
-    <label class="campo" for="nombre">¿Cómo te llamas? <span style="font-weight:400;color:var(--muted)">(opcional, para saludarte)</span></label>
+    <label class="campo" for="nombre">¿Cómo te llamas? <span style="font-weight:400;color:var(--muted)">(opcional)</span></label>
     <input class="txt" id="nombre" maxlength="60" autocomplete="given-name" placeholder="Tu nombre" value="${esc(E.nombre)}">
 
     <button class="todo-card" id="b-todo" aria-pressed="false">
@@ -664,6 +810,17 @@ function pantallaDestinos(){
       <div class="elegidos" id="elegidos"></div>
       <div class="contador" id="contador"></div>
     </div>
+
+    <div class="grupo"><h3>¿Ya tienes fechas? <span style="text-transform:none;letter-spacing:0;font-weight:400">(opcional)</span></h3>
+      <p class="nota-f">Si las pones, solo te avisamos de vuelos en esas fechas.</p>
+      <div class="fechas">
+        <label for="f-sale">Salgo<input class="txt" type="date" id="f-sale" min="${HOY}" value="${esc((E.fechas && E.fechas.s) || "")}"></label>
+        <label for="f-vuelve">Regreso <small>(opcional)</small><input class="txt" type="date" id="f-vuelve" min="${HOY}" value="${esc((E.fechas && E.fechas.r) || "")}"></label>
+      </div>
+      <div class="chips f-flex" id="f-flex"></div>
+      <button class="link" id="f-borrar" style="margin-top:8px">Quitar fechas</button>
+    </div>
+
     <button class="btn pri full" id="b-guardar">Guardar mis destinos</button>
     <div class="error" id="err"></div>
   </div></section>`;
@@ -740,11 +897,38 @@ function pantallaDestinos(){
   }
   pintarSel();
 
+  // ---- fechas
+  let flex = E.fechas ? (+E.fechas.x || 0) : 1;
+  function leerFechas(){
+    const s = $("#f-sale").value, r = $("#f-vuelve").value;
+    E.fechas = s ? { t: "f", s, r: r || null, x: flex } : null;
+    if (s) $("#f-vuelve").min = s;
+    pintarFlex();
+  }
+  function pintarFlex(){
+    const hay = !!$("#f-sale").value || !!$("#f-vuelve").value;
+    $("#f-flex").innerHTML = hay ? [[0, "Fechas exactas"], [1, "±1 día"], [3, "±3 días"]].map(([x, t]) =>
+      `<button class="chip ${flex === x ? "on" : ""}" data-x="${x}" aria-pressed="${flex === x}">${t}</button>`).join("") : "";
+    $("#f-flex").querySelectorAll(".chip").forEach(b => b.onclick = () => { flex = +b.dataset.x; leerFechas(); });
+    $("#f-borrar").hidden = !hay;
+  }
+  $("#f-sale").onchange = leerFechas; $("#f-vuelve").onchange = leerFechas;
+  $("#f-borrar").onclick = () => { $("#f-sale").value = ""; $("#f-vuelve").value = ""; leerFechas(); };
+  pintarFlex();
+
   $("#b-guardar").onclick = async () => {
-    const b = $("#b-guardar"); b.disabled = true; b.textContent = "Guardando...";
+    const b = $("#b-guardar");
+    leerFechas();
+    const s = $("#f-sale").value, r = $("#f-vuelve").value;
+    if (r && !s) { $("#err").textContent = "Pon también la fecha en que sales."; return; }
+    if (s && s < HOY) { $("#err").textContent = "La fecha de salida ya pasó."; return; }
+    if (s && r && r < s) { $("#err").textContent = "El regreso tiene que ser después de la salida."; return; }
+    $("#err").textContent = "";
+    b.disabled = true; b.textContent = "Guardando...";
     E.nombre = $("#nombre").value.trim().slice(0, 60);
     try {
-      E.perfil = await Cuenta.guardar(E.user, { nombre: E.nombre, destinos: E.sel });
+      const destinos = E.sel.concat(E.fechas ? [{ t: "f", s: E.fechas.s, r: E.fechas.r, x: E.fechas.x }] : []);
+      E.perfil = await Cuenta.guardar(E.user, { nombre: E.nombre, destinos });
       pantallaListo();
     } catch (err) { $("#err").textContent = traducirError(err); b.disabled = false; b.textContent = "Guardar mis destinos"; }
   };
@@ -759,11 +943,9 @@ function pantallaListo(){
     <h2>¡Listo${nombre}!</h2>
     <p>Te van a estar llegando emails con vuelos baratos de los lugares que seleccionaste:</p>
     <div class="chips">${E.sel.map((d, i) => `<span class="chip" style="animation-delay:${300 + i * 60}ms">${esc(nombreDestino(d))}</span>`).join("")}</div>
+    ${E.fechas ? `<p style="margin-top:14px">Solo para estas fechas:</p><div class="f-resumen">${ICON.cal}<span>${esc(textoFechas(E.fechas))}</span></div>` : ""}
     <div class="caja">
-      <b>¿Cada cuánto?</b> Buscamos cada 4 horas y solo te escribimos cuando sale algo bueno. El primer email te llega en las próximas horas con los precios de hoy.
-    </div>
-    <div class="caja">
-      <b>Para que no se pierdan:</b> los emails llegan de <b>${esc(CFG.remitente || "Yasui Flights")}</b>. Si el primero cae en spam, márcalo como "No es spam".
+      Buscamos cada 4 horas y solo te escribimos cuando sale algo bueno. Los emails llegan de <b>${esc(CFG.remitente || "Yasui Flights")}</b>; si el primero cae en spam, márcalo como "No es spam".
     </div>
     <div class="acciones-listo">
       <button class="btn pri" onclick="pantallaOfertas()">Ver ofertas de ahora</button>
@@ -775,13 +957,11 @@ function pantallaListo(){
 
 /* ============================================================ PANTALLA: mis ofertas */
 function tarjeta(o, i = 0){
-  const region = REGIONES[o.region] || "";
   const titulo = `<h3>${esc(o.destino_nombre)}<span class="code">${esc(o.aeropuerto && o.aeropuerto.length === 3 ? o.aeropuerto : (o.destino.length <= 4 ? o.destino : ""))}</span></h3>
     ${o.pais_nombre && o.pais_nombre !== o.destino_nombre ? `<div class="pais">${esc(o.pais_nombre)}</div>` : ""}`;
-  const motivos = o.motivos && o.motivos.length ? `<p class="motivos">${esc(o.motivos.join(" · "))}</p>` : "";
   if (o.tipo === "combinado") {
     const p = o.puente, t = o.tramo, ciudad = p.nombre, dest = o.destino_nombre;
-    const comp = o.directo ? `Normal desde SJU ~${dinero(o.directo)}${o.descuento > 0 ? ` &middot; <strong>${Math.round(o.descuento * 100)}% menos</strong>` : ""}` : `Precio meta: ${dinero(o.meta)}`;
+    const comp = o.directo && o.descuento > 0 ? `<strong>${Math.round(o.descuento * 100)}% menos</strong> que directo desde SJU (~${dinero(o.directo)})` : "";
     const f = d => d ? esc(fmtFecha(d)) : "—";
     const conFechas = !!(p.salida && t.salida), algunaFecha = !!(p.salida || t.salida);
     const fila = (fecha, desde, hasta) => algunaFecha
@@ -792,14 +972,14 @@ function tarjeta(o, i = 0){
     const cx = p.conexion || {};
     const conLinea = c => c ? `<div class="itin-con${algunaFecha ? "" : " sin-f"}">Mismo día en ${esc(c.aeropuerto || ciudad)}: llegas ${fmtHora(c.llega)}, el otro sale ${fmtHora(c.sale)} (${fmtMin(c.minutos)})</div>` : "";
     const riesgo = cx.ida || cx.vuelta
-      ? `Conectas el mismo día con 2 boletos separados: si el primer vuelo se atrasa, la otra aerolínea no te espera y pierdes el segundo. Ve solo con equipaje de mano (si chequeas maleta tienes que recogerla y volver a chequearla)${cx.vuelta && o.pais !== "US" ? " y acuérdate de que al volver pasas por aduana" : ""}.`
-      : "Si un vuelo se atrasa, la otra aerolínea no te espera: por eso llegas un día antes.";
+      ? `Mismo día con boletos separados: si el primero se atrasa, pierdes el segundo. Solo equipaje de mano${cx.vuelta && o.pais !== "US" ? " (y al volver pasas aduana)" : ""}.`
+      : "Boletos separados: por eso llegas un día antes.";
     return `<article class="card n${o.nivel}" style="--i:${Math.min(i, 8)}">
       ${postal(o.region)}
-      <div class="top"><span class="badges"><span class="badge combo">Combinado</span>${cx.ida || cx.vuelta ? `<span class="badge md">Mismo día</span>` : ""}<span class="badge niv">${esc(o.nivel_nombre)}</span></span><span class="reg">${esc(region)}</span></div>
+      <div class="top"><span class="badges"><span class="badge combo">Combinado</span>${cx.ida || cx.vuelta ? `<span class="badge md">Mismo día</span>` : ""}<span class="badge niv">${esc(o.nivel_nombre)}</span></span></div>
       ${titulo}
       <div class="precio"><span class="monto num">${dinero(o.precio)}</span><span class="tipo">total${p.exacto ? "" : " aprox."} ida y vuelta</span></div>
-      <div class="comp">${comp}</div>
+      ${comp ? `<div class="comp">${comp}</div>` : ""}
       <div class="itin">
         <div class="itin-h">Ida</div>
         ${fila(f(p.salida), "SJU", ciudad)}
@@ -816,9 +996,8 @@ function tarjeta(o, i = 0){
         <div class="bol">${LOGO(p.aerolinea_iata, p.aerolinea)}<span>SJU ⇄ ${esc(ciudad)}</span><b class="num">${p.exacto ? "" : "~"}${dinero(p.precio)}</b>${p.aerolinea ? `<small>${esc(p.aerolinea)}</small>` : ""}</div>
         <div class="bol">${LOGO(t.aerolinea_iata, t.aerolinea)}<span>${esc(ciudad)} ⇄ ${esc(dest)}</span><b class="num">${dinero(t.precio)}</b><small>${esc([t.aerolinea, t.sitio].filter(Boolean).join(" · "))}</small></div>
       </div>
-      ${t.titulo ? `<p class="titulo">"${esc(t.titulo)}"</p>` : ""}
+      ${t.titulo && !t.salida ? `<p class="titulo">"${esc(t.titulo)}"</p>` : ""}
       <div class="ojo">${esc(cambio)}${esc(riesgo)}</div>
-      ${motivos}
       <div class="acciones col">
         <a class="btn osc" href="${esc(p.link)}" target="_blank" rel="noopener">Boleto SJU ⇄ ${esc(ciudad)}</a>
         <a class="btn" href="${esc(t.link)}" target="_blank" rel="noopener">Boleto ${esc(ciudad)} ⇄ ${esc(dest)}</a>
@@ -828,35 +1007,47 @@ function tarjeta(o, i = 0){
   const fechas = o.salida ? `${fmtFecha(o.salida)}${o.regreso ? ` &rarr; ${fmtFecha(o.regreso)} &middot; ${dias(o.salida, o.regreso)} días` : " &middot; solo ida"}` : "Fechas en el post";
   const escalas = o.escalas == null ? null : (o.escalas === 0 ? "directo" : `${o.escalas} escala${o.escalas > 1 ? "s" : ""}`);
   const vuelo = [o.aerolinea, escalas].filter(Boolean).map(esc).join(" &middot; ");
-  const comp = o.mediana ? `Normal ~${dinero(o.mediana)}${o.descuento > 0 ? ` &middot; <strong>${Math.round(o.descuento * 100)}% menos</strong>` : ""}` : (o.meta ? `Precio meta: ${dinero(o.meta)}` : "");
+  const comp = o.mediana && o.descuento > 0 ? `<strong>${Math.round(o.descuento * 100)}% menos</strong> que lo normal (~${dinero(o.mediana)})` : "";
   let verif = "";
-  if (o.fuente !== "google" && o.verificado === true) verif = `<div class="verif si">Confirmado en Google Flights: ${dinero(o.precio_google)}</div>`;
-  else if (o.verificado === false) verif = `<div class="verif no">Google Flights lo tiene a ${dinero(o.precio_google)} para esas fechas (puede que ya no esté)</div>`;
+  if (o.fuente !== "google" && o.verificado === true) verif = `<div class="verif si">${ICON.check}Confirmado en Google Flights</div>`;
+  else if (o.verificado === false) verif = `<div class="verif no">Google lo tiene a ${dinero(o.precio_google)}: puede que ya no esté</div>`;
   const ec = o.escala_corta;
-  const escala = ec ? `<div class="ojo"><b>Escala corta:</b> en ${esc(ec.aeropuerto || "la escala")} llegas ${fmtHora(ec.llega)} y el otro avión sale ${fmtHora(ec.sale)} (${fmtMin(ec.minutos)}). Es un solo boleto, así que si el primero se atrasa la aerolínea te reubica, pero hay que moverse rápido.</div>` : "";
+  const escala = ec ? `<div class="ojo"><b>Escala corta en ${esc(ec.aeropuerto || "la escala")}:</b> llegas ${fmtHora(ec.llega)}, el otro sale ${fmtHora(ec.sale)} (${fmtMin(ec.minutos)}).</div>` : "";
   const otroAp = o.origen && o.origen !== "SJU";
   const ver = o.link && o.fuente !== "google" ? `<a class="btn" href="${esc(o.link)}" target="_blank" rel="noopener">${o.fuente === "feed" ? "Ver post" : "Aviasales"}</a>` : "";
   return `<article class="card n${o.nivel}" style="--i:${Math.min(i, 8)}">
     ${postal(o.region)}
-    <div class="top"><span class="badges">${otroAp ? `<span class="badge bqn">Sale de ${esc(salidaDe(o))}</span>` : ""}<span class="badge niv">${esc(o.nivel_nombre)}</span></span><span class="reg">${esc(region)}</span></div>
+    <div class="top"><span class="badges">${otroAp ? `<span class="badge bqn">Sale de ${esc(salidaDe(o))}</span>` : ""}<span class="badge niv">${esc(o.nivel_nombre)}</span></span></div>
     ${titulo}
     <div class="precio"><span class="monto num">${dinero(o.precio)}</span><span class="tipo">${o.ida_y_vuelta ? "ida y vuelta" : "solo ida"} desde ${esc(otroAp ? salidaDe(o) + " (" + o.origen + ")" : "SJU")}</span></div>
-    <div class="comp">${comp}</div>
+    ${comp ? `<div class="comp">${comp}</div>` : ""}
     <ul class="det">
       <li>${ICON.cal}<span>${fechas}</span></li>
       ${vuelo ? `<li>${o.aerolinea ? LOGO(o.aerolinea_iata, o.aerolinea) : ICON.vuelo}<span>${vuelo}</span></li>` : ""}
-      <li>${ICON.ojo}<span>${esc(o.sitio || o.fuente)} &middot; ${hace(o.fuente === "feed" ? (o.encontrado || o.primera_vez) : o.ultima_vez)}</span></li>
     </ul>
-    ${o.titulo ? `<p class="titulo">"${esc(o.titulo)}"</p>` : ""}
-    ${verif}${escala}${motivos}
+    ${o.titulo && !o.salida ? `<p class="titulo">"${esc(o.titulo)}"</p>` : ""}
+    ${verif}${escala}
     <div class="acciones"><a class="btn osc" href="${esc(o.fuente === "google" && o.link ? o.link : o.link_google)}" target="_blank" rel="noopener">Google Flights</a>${ver}</div>
   </article>`;
 }
 
-const ordenar = l => l.sort((a,b) => b.nivel - a.nivel || (b.descuento || 0) - (a.descuento || 0) || a.precio - b.precio);
+/* De más barato a más caro (si empatan, primero el posible error de tarifa) */
+/* Vista "lista" (tipo menú): DESTINO ........ $precio, y al tocarla se abre la tarjeta completa */
+function filaMenu(o){
+  const combo = o.tipo === "combinado";
+  const sale = combo && o.puente ? (o.puente.salida || o.salida) : o.salida, vuelve = combo && o.puente ? (o.puente.regreso || o.regreso) : o.regreso;
+  const fechas = sale ? `${fmtFecha(sale)}${vuelve ? " → " + fmtFecha(vuelve) : " · solo ida"}` : "Fechas en el post";
+  const sale_de = o.origen && o.origen !== "SJU" ? `<span class="badge bqn">Sale de ${esc(salidaDe(o))}</span>` : "";
+  return `<details class="lm"><summary>
+      <div class="arriba"><span class="n">${esc(o.destino_nombre)}${o.pais_nombre && o.pais_nombre !== o.destino_nombre ? `<small>${esc(o.pais_nombre)}</small>` : ""}</span><span class="p num">${dinero(o.precio)}</span></div>
+      <div class="abajo n${o.nivel}"><span class="badge niv">${esc(o.nivel_nombre)}</span>${sale_de}<span>${esc(fechas)}</span>${combo ? `<span>vía ${esc(o.puente.nombre)}</span>` : ""}<span class="ver" aria-hidden="true"></span></div>
+    </summary>${tarjeta(o)}</details>`;
+}
+
+const ordenar = l => l.sort((a,b) => a.precio - b.precio || b.nivel - a.nivel);
 
 function tarjetaRadar(d){
-  const ofertas = ordenar((D.ofertas || []).filter(o => coincide(o, [d])));
+  const ofertas = ordenar((D.ofertas || []).filter(o => coincide(o, [d]) && enFechas(o, E.fechas)));
   const mejor = ofertas[0];
   let precio = null, info = "", link = "";
   if (d.t === "c" && PRECIOS[d.c]) {
@@ -882,18 +1073,25 @@ function tarjetaRadar(d){
 function pantallaOfertas(){
   const nombre = E.nombre ? `, ${esc(E.nombre)}` : "";
   const todas = ordenar((D.ofertas || []).slice());
-  const mias = todas.filter(o => coincide(o, E.sel));
-  const otras = todas.filter(o => !coincide(o, E.sel));
-  $("#app").innerHTML = hero({ menu: true, alto: true, extra: `<div class="saludo"><div><h1>Hola${nombre}</h1><p>Actualizado ${esc(hace(D.generado))} · buscamos cada 4 horas · precios en USD por persona</p></div></div>` }) + `
+  const mias = todas.filter(o => coincide(o, E.sel) && enFechas(o, E.fechas));
+  const otras = todas.filter(o => !mias.includes(o));
+  const pasaron = E.fechas && E.fechas.s < HOY;
+  if (!E.vista) { try { E.vista = localStorage.getItem("yasui_vista") || "tarjetas"; } catch (e) { E.vista = "tarjetas"; } }
+  const ver = l => E.vista === "lista" ? `<section class="lista-menu">${l.map(filaMenu).join("")}</section>` : `<section class="grid">${l.map((o, i) => tarjeta(o, i)).join("")}</section>`;
+  $("#app").innerHTML = hero({ menu: true, alto: true, extra: `<div class="saludo"><div><h1>Hola${nombre}</h1><p>Precios en USD por persona</p></div></div>` }) + `
   <main class="wrap">
+    <span class="ceja">Tu radar</span>
     <section class="radar">${E.sel.map((d, i) => tarjetaRadar(d).replace('<div class="rd">', `<div class="rd" style="animation-delay:${Math.min(i, 8) * 50}ms">`)).join("")}</section>
 
+    <span class="ceja">Desde San Juan</span>
     <h2 class="sec">Ofertas para ti</h2>
-    <p class="h2sub">Las de tus destinos, las más locas primero. Si algo te gusta, búscalo ya: estos precios duran poco.</p>
-    <section class="grid">${mias.length ? mias.map((o, i) => tarjeta(o, i)).join("") : `<div class="vacio">Ahora mismo no hay ofertas locas para tus destinos. Seguimos buscando y te escribimos apenas salga algo.</div>`}</section>
+    <p class="h2sub">De la más barata a la más cara. Estos precios duran poco.</p>
+    ${E.fechas ? `<div class="f-resumen">${ICON.cal}<span>Solo para tus fechas: ${esc(textoFechas(E.fechas))}${pasaron ? " (ya pasaron: cámbialas en Destinos)" : ""}</span></div>` : ""}
+    <div class="vistas" role="tablist"><button class="${E.vista !== "lista" ? "on" : ""}" data-v="tarjetas">Tarjetas</button><button class="${E.vista === "lista" ? "on" : ""}" data-v="lista">Lista</button></div>
+    ${mias.length ? ver(mias) : `<section class="grid"><div class="vacio">Ahora mismo no hay ofertas para tus destinos${E.fechas ? " en esas fechas" : ""}. Seguimos buscando y te escribimos apenas salga algo.</div></section>`}
 
     ${otras.length ? `<div class="mas"><button class="btn" id="b-todas">${E.verTodas ? "Esconder" : "Ver"} otras ofertas (${otras.length})</button></div>
-    <section class="grid" id="otras" style="margin-top:14px" ${E.verTodas ? "" : "hidden"}>${E.verTodas ? otras.slice(0, 60).map((o, i) => tarjeta(o, i)).join("") : ""}</section>` : ""}
+    <div id="otras" style="margin-top:14px" ${E.verTodas ? "" : "hidden"}>${E.verTodas ? ver(otras.slice(0, 60)) : ""}</div>` : ""}
 
     <footer class="pie">
       <div><h4>Reserva primero, planifica después</h4><p>Desde Puerto Rico aplica la regla de 24 horas del DOT: si reservas con 7+ días de anticipación, puedes cancelar gratis dentro de 24 horas.</p></div>
@@ -904,6 +1102,10 @@ function pantallaOfertas(){
       <span>¿Ya no quieres recibir emails?</span> <button class="link" id="b-baja">Darme de baja</button>
     </div>
   </main>`;
+  document.querySelectorAll(".vistas button").forEach(b => b.onclick = () => {
+    E.vista = b.dataset.v; try { localStorage.setItem("yasui_vista", E.vista); } catch (e) {}
+    const y = window.scrollY; pantallaOfertas(); window.scrollTo(0, y);
+  });
   const bt = $("#b-todas");
   if (bt) bt.onclick = () => { E.verTodas = !E.verTodas; pantallaOfertas(); setTimeout(() => $("#otras") && $("#otras").scrollIntoView({behavior:"smooth", block:"start"}), 30); };
   $("#b-baja").onclick = () => {
@@ -938,7 +1140,7 @@ async function pantallaBaja(token){
 /* ============================================================ navegación */
 function irInicio(){ if (E.user) { (E.sel.length && E.perfil && E.perfil.activo) ? pantallaOfertas() : pantallaDestinos(); } else pantallaEntrar(); window.scrollTo(0,0); return false; }
 async function irDestinos(){ if (!E.user) return pantallaEntrar(); pantallaDestinos(); window.scrollTo(0,0); }
-async function salir(){ try { await Cuenta.salir(); } catch (e) {} E.user = null; E.perfil = null; E.sel = []; pantallaEntrar(); }
+async function salir(){ try { await Cuenta.salir(); } catch (e) {} E.user = null; E.perfil = null; E.sel = []; E.fechas = null; pantallaEntrar(); }
 
 function bienvenida(){
   const sp = $("#splash"); if (!sp) return;

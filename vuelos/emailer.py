@@ -82,7 +82,17 @@ def _lista_bonita(nombres: List[str]) -> str:
 
 
 def nombres_destinos(destinos: List[dict]) -> List[str]:
-    return [d.get("n") or REGIONES.get(d.get("c"), d.get("c")) for d in destinos or []]
+    return [d.get("n") or REGIONES.get(d.get("c"), d.get("c")) for d in destinos or [] if d.get("t") != "f"]
+
+
+def texto_fechas(destinos: List[dict]) -> str:
+    """'10 mar → 20 mar (±1 día)' si la persona puso fechas; si no, ''."""
+    f = next((d for d in destinos or [] if d.get("t") == "f" and d.get("s")), None)
+    if not f:
+        return ""
+    x = int(f.get("x") or 0)
+    flex = {0: "fechas exactas", 1: "±1 día", 3: "±3 días"}.get(x, f"±{x} días")
+    return (f"{_f(f['s'])} → {_f(f['r'])}" if f.get("r") else f"saliendo el {_f(f['s'])}") + f" ({flex})"
 
 
 def destinatarios(para: str, usuario: str) -> List[str]:
@@ -97,7 +107,8 @@ def destinatarios(para: str, usuario: str) -> List[str]:
 
 # ======================================================================= asuntos
 def asunto(ofertas: List[dict]) -> str:
-    p = ofertas[0]
+    # La lista va de más barato a más caro, pero el asunto destaca la más loca (posible error primero)
+    p = min(ofertas, key=lambda o: (-o["nivel"], o["precio"]))
     tipo = "ida y vuelta" if p["ida_y_vuelta"] else "solo ida"
     combo = " (combinado)" if p.get("tipo") == "combinado" else ""
     if p.get("tipo") != "combinado" and p.get("origen") and p["origen"] != "SJU":
@@ -238,7 +249,10 @@ def _fila(o: dict) -> str:
     return _fila_combinado(o) if o.get("tipo") == "combinado" else _fila_directa(o)
 
 
-def _plantilla(titulo: str, intro_html: str, filas_html: str, pie_html: str) -> str:
+def _plantilla(titulo: str, intro_html: str, filas_html: str, pie_html: str, consejos: bool = True) -> str:
+    nota = ("Los errores de tarifa duran poco: reserva rápido y no pagues hotel hasta que la aerolínea confirme.\n"
+            "  Desde Puerto Rico aplica la regla de 24 horas del DOT (cancelación gratis si reservas con 7+ días de anticipación).\n"
+            if consejos else "")
     return f"""<!doctype html><html><body style="margin:0;background:{FONDO};font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:{FONDO}"><tr><td align="center" style="padding:20px 10px">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:{PANEL};border-radius:16px;overflow:hidden;border:1px solid {LINEA}">
@@ -249,9 +263,7 @@ def _plantilla(titulo: str, intro_html: str, filas_html: str, pie_html: str) -> 
 {intro_html}
 {filas_html}
 <tr><td style="padding:14px 16px;font-size:12px;color:{GRIS}">
-  Los errores de tarifa duran poco: reserva rápido y no pagues hotel hasta que la aerolínea confirme.
-  Desde Puerto Rico aplica la regla de 24 horas del DOT (cancelación gratis si reservas con 7+ días de anticipación).
-  {pie_html}
+  {nota}{pie_html}
 </td></tr>
 </table></td></tr></table></body></html>"""
 
@@ -296,7 +308,9 @@ def email_bienvenida(persona: dict, ofertas: List[dict], precios: List[dict], ur
     lugares = _lista_bonita(nombres_destinos(persona.get("destinos")))
     intro = (f"<tr><td style='padding:16px 16px 6px;font-size:14px;color:{TINTA};line-height:1.5'>"
              f"{e(_hola(persona))} Ya te apuntaste en Yasui Flights. Buscamos vuelos cada 4 horas y te escribimos "
-             f"solo cuando sale algo bueno para: <b>{e(lugares)}</b>.</td></tr>")
+             f"solo cuando sale algo bueno para: <b>{e(lugares)}</b>"
+             + (f", y solo en tus fechas: <b>{e(texto_fechas(persona.get('destinos')))}</b>" if texto_fechas(persona.get("destinos")) else "")
+             + ".</td></tr>")
     filas = ""
     if precios:
         celdas = "".join(
@@ -314,7 +328,9 @@ def email_bienvenida(persona: dict, ofertas: List[dict], precios: List[dict], ur
     else:
         filas += (f"<tr><td style='padding:6px 16px 12px;font-size:13px;color:{GRIS}'>Ahora mismo no hay nada loco para tus destinos. "
                   f"Apenas salga algo, te llega un email.</td></tr>")
-    texto = f"{_hola(persona)} Ya te apuntaste en Yasui Flights. Te escribimos cuando salga algo bueno para: {lugares}.\n\n"
+    fechas = texto_fechas(persona.get("destinos"))
+    texto = (f"{_hola(persona)} Ya te apuntaste en Yasui Flights. Te escribimos cuando salga algo bueno para: {lugares}"
+             + (f", y solo en tus fechas: {fechas}" if fechas else "") + ".\n\n")
     texto += cuerpo_texto(ofertas, url_sitio, persona) if ofertas else (f"Ver la página: {url_sitio}\n" if url_sitio else "")
     return {
         "asunto": "¡Listo! Ya estás en Yasui Flights",
@@ -357,6 +373,26 @@ def cuerpo_texto(ofertas: List[dict], url_sitio: str = "", persona: Optional[dic
 
 
 # ======================================================================= envío
+def email_registro(persona: dict, url_sitio: str = "") -> Dict[str, str]:
+    """Aviso para Yasui Flights: alguien nuevo se registró en la página."""
+    nombre = (persona.get("nombre") or "").strip()
+    correo = persona.get("email") or ""
+    fila = ("<tr><td style='padding:6px 0;font-size:13px;color:{g};width:70px'>{k}</td>"
+            "<td style='padding:6px 0;font-size:15px;color:{t};font-weight:600'>{v}</td></tr>")
+    tabla = (fila.format(g=GRIS, t=TINTA, k="Nombre", v=e(nombre) if nombre else "<i>(no puso nombre)</i>")
+             + fila.format(g=GRIS, t=TINTA, k="Email", v=e(correo)))
+    intro = (f"<tr><td style='padding:16px'><div style='font-size:14px;color:{TINTA};margin-bottom:8px'>"
+             f"Se registró una persona nueva en la página:</div>"
+             f"<table role='presentation' cellpadding='0' cellspacing='0'>{tabla}</table></td></tr>")
+    pie = (f"<div style='font-size:12px;color:{GRIS}'><a href='{e(url_sitio)}' style='color:{GRIS}'>{e(url_sitio)}</a></div>"
+           if url_sitio else "")
+    return {
+        "asunto": f"Nueva persona en Yasui Flights: {nombre or correo}",
+        "html": _plantilla("Nueva persona registrada", intro, "", pie, consejos=False),
+        "texto": f"Se registró una persona nueva en Yasui Flights.\n\nNombre: {nombre or '(no puso nombre)'}\nEmail: {correo}\n",
+    }
+
+
 class Cartero:
     """Una sola conexión a Gmail para mandar muchos emails, uno por persona."""
 

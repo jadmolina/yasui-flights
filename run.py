@@ -20,7 +20,7 @@ from typing import Dict, List
 
 from vuelos import emailer, site, suscriptores
 from vuelos.combinados import Combinador
-from vuelos.detector import Detector, coincide
+from vuelos.detector import Detector, coincide, fechas_de
 from vuelos.lugares import Lugares
 from vuelos.util import DATA, DOCS, ahora_iso, aviso, cargar_config, cargar_env, env, guardar_json, log
 
@@ -39,6 +39,22 @@ def ciudades_de(personas: List[dict]) -> List[str]:
     """Ciudades que escogió la gente, las más pedidas primero."""
     cuenta = Counter(d["c"] for p in personas for d in (p.get("destinos") or []) if d.get("t") == "c" and d.get("c"))
     return [c for c, _ in cuenta.most_common()]
+
+
+def pedidos_de_fechas(personas: List[dict], hoy: str) -> List[dict]:
+    """Fechas que puso la gente (juntando a los que pusieron las mismas)."""
+    grupos: Dict[tuple, dict] = {}
+    for p in personas:
+        f = fechas_de(p.get("destinos"))
+        if not f or f["s"] < hoy:
+            continue
+        g = grupos.setdefault((f["s"], f["r"], f["x"]), {**f, "ciudades": [], "otros": False})
+        for d in p.get("destinos") or []:
+            if d.get("t") == "c" and d.get("c") and d["c"] not in g["ciudades"]:
+                g["ciudades"].append(d["c"])
+            elif d.get("t") in ("p", "r"):
+                g["otros"] = True
+    return list(grupos.values())
 
 
 def precios_para(persona: dict, precios: Dict[str, dict]) -> List[dict]:
@@ -75,6 +91,7 @@ def mandar_emails(det: Detector, store, pendientes: List[tuple], avisos: Dict[st
         return 0
     remitente = config.get("email", {}).get("nombre_remitente", "Yasui Flights")
     enviados = 0
+    nuevos = []  # gente que se registró desde la última corrida (les llegó la bienvenida ahora)
     with emailer.Cartero(usuario, clave, remitente) as cartero:
         for persona, contenido, incluidas, bienvenida in pendientes[:MAX_EMAILS_POR_CORRIDA]:
             baja = emailer.link_baja(url_sitio, persona["token_baja"]) if url_sitio and persona.get("token_baja") else None
@@ -90,6 +107,17 @@ def mandar_emails(det: Detector, store, pendientes: List[tuple], avisos: Dict[st
             store.guardar_avisos(persona["id"], av, [det.clave_aviso(o) for o in incluidas])
             if bienvenida:
                 store.marcar_bienvenida(persona["id"])
+                nuevos.append(persona)
+        # Aviso para Yasui Flights: quién se registró (un email por persona)
+        conf = config.get("email", {})
+        if nuevos and conf.get("aviso_registros", True):
+            para = (conf.get("aviso_registros_a") or "").strip() or usuario
+            for persona in nuevos:
+                try:
+                    cartero.mandar(para, emailer.email_registro(persona, url_sitio))
+                except Exception as e:  # noqa: BLE001
+                    aviso(f"No pude mandar el aviso de registro nuevo: {e}")
+            log(f"Avisos de registro nuevo mandados a Yasui Flights: {len(nuevos)}")
     return enviados
 
 
@@ -112,12 +140,6 @@ def correr_demo(config: dict, mandar: bool) -> int:
         tarifas, lambda t: coincide({"destino": t.destino, "aeropuerto": t.aeropuerto, "pais": t.pais,
                                      "region": t.region, "nivel": 3 if t.es_error else 0}, intereses))
     ofertas = det.combinar(det.evaluar_todas(tarifas) + combos)
-    for o in ofertas:  # simula la verificación con Google
-        if o["destino"] == "TYO" and o.get("tipo") != "combinado":
-            o.update(verificado=True, precio_google=412, escala_corta={
-                "aeropuerto": "LAX", "llega": f"{o['salida']}T17:00", "sale": f"{o['salida']}T18:00", "minutos": 60})
-        if o["destino"] == "PAR" and o.get("tipo") != "combinado":
-            o.update(verificado=False, precio_google=690)
     precios = det.precios_mapa(tarifas)
     datos = site.armar_datos(config, ahora_iso(), det.hoy, ofertas, precios, lugares.indice_buscador(), [], demo=True)
     datos["config"]["supabase_url"] = ""  # la demo siempre usa el login de prueba (código 123456)
@@ -179,6 +201,9 @@ def main() -> int:
     intereses = intereses_de(personas, config)
     ciudades = ciudades_de(personas)
     det.elegidos = set(ciudades)
+    pedidos = pedidos_de_fechas(personas, det.hoy)
+    if pedidos:
+        log(f"  {len(pedidos)} grupo(s) de fechas que puso la gente")
     usar = (lambda f: args.solo in (None, f))
     tarifas, fuentes = [], []
 
@@ -194,6 +219,8 @@ def main() -> int:
             try:
                 tp = Travelpayouts(token, config)
                 nuevas = tp.buscar(ciudades)
+                if pedidos:
+                    nuevas += tp.buscar_fechas(pedidos, int(config.get("travelpayouts", {}).get("llamadas_fechas", 30)))
                 for otro in config.get("otros_origenes") or []:  # Aguadilla: búsqueda más ligera
                     nuevas += tp.buscar_desde(otro["codigo"], int(config.get("travelpayouts", {}).get("meses_a_buscar", 8)))
                 if config.get("combinados", {}).get("activo", True):
@@ -225,6 +252,8 @@ def main() -> int:
         if DISPONIBLE:
             gf = GoogleFlights(config)
             tarifas += gf.escanear(ciudades)
+            if pedidos:
+                tarifas += gf.buscar_fechas(pedidos, int(config.get("google_flights", {}).get("busquedas_fechas", 6)))
         else:
             aviso(f"Google Flights no disponible: {ERROR_IMPORT}")
             fuentes.append({"nombre": "Google Flights", "ok": False, "activo": False,
@@ -234,6 +263,11 @@ def main() -> int:
     tarifas = det.preparar(tarifas)
     det.actualizar_historial(tarifas)
     ofertas = det.evaluar_todas(tarifas)
+    if pedidos:  # lo mejor en las fechas que puso cada quien (aunque otro día del mes salga más barato)
+        ya = {o["id"] for o in ofertas}
+        extra = [o for o in det.ofertas_con_fechas(tarifas, personas) if o["id"] not in ya]
+        ofertas += extra
+        log(f"  Ofertas en las fechas que puso la gente: {len(extra)} más")
 
     def quiere(t) -> bool:
         return coincide({"destino": t.destino, "aeropuerto": t.aeropuerto, "pais": t.pais, "region": t.region,

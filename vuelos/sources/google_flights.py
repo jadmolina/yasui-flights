@@ -163,6 +163,38 @@ class GoogleFlights:
         log(f"  Google Flights: {len(tarifas)} precios ({self.busquedas} búsquedas)")
         return tarifas
 
+    # -------------------------------------------------------------- fechas que puso la gente
+    def buscar_fechas(self, pedidos: List[dict], maximo: int = 6) -> List[Tarifa]:
+        """Precio real en Google para las fechas exactas que puso alguien, a sus ciudades."""
+        if not DISPONIBLE or not maximo:
+            return []
+        aeropuertos = {f["ciudad"]: f.get("aeropuerto") or f["ciudad"] for f in self.config.get("favoritos", [])}
+        tarifas: List[Tarifa] = []
+        hechas = set()
+        for p in pedidos:
+            if p["s"] < date.today().isoformat():
+                continue
+            for c in p.get("ciudades") or []:
+                ap = aeropuertos.get(c, c)
+                if (ap, p["s"], p.get("r")) in hechas:
+                    continue
+                if len(hechas) >= maximo or self.bloqueado:
+                    break
+                hechas.add((ap, p["s"], p.get("r")))
+                res = self.precio(ap, p["s"], p.get("r"))
+                if not res:
+                    continue
+                tarifas.append(Tarifa(
+                    fuente="google", sitio="Google Flights", origen=self.origen, destino=ap, precio=res["precio"],
+                    ida_y_vuelta=bool(p.get("r")), salida=p["s"], regreso=p.get("r"),
+                    aerolinea=res["aerolinea"], escalas=res["escalas"],
+                    link=link_google(self.origen, ap, p["s"], p.get("r")), encontrado=ahora_iso(),
+                    extra={"escala_corta": res.get("escala_corta")},
+                ))
+        if hechas:
+            log(f"  Google Flights (fechas que puso la gente): {len(tarifas)} precios ({len(hechas)} búsquedas)")
+        return tarifas
+
     # -------------------------------------------------------------- verificar
     def verificar(self, ofertas: List[dict]) -> int:
         """Confirma en Google las mejores ofertas que no vienen de Google. Devuelve cuántas revisó."""
