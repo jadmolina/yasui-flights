@@ -1,8 +1,8 @@
 {
- "ultima_corrida": "2026-11-13T01:13:36+00:00",
- "segundos": 217,
- "tarifas": 3301,
- "ofertas": 23,
+ "ultima_corrida": "2026-11-13T22:02:09+00:00",
+ "segundos": 102,
+ "tarifas": 3270,
+ "ofertas": 31,
  "personas": 13,
  "suscriptores": {
   "modo": "supabase",
@@ -14,27 +14,15 @@
   "personas": 13
  },
  "emails": {
-  "pendientes": 6,
-  "enviados": 6
+  "pendientes": 3,
+  "enviados": 3
  },
  "fuentes": [
   {
    "nombre": "Aviasales",
    "ok": true,
-   "n": 3284,
+   "n": 3260,
    "detalle": ""
-  },
-  {
-   "nombre": "Secret Flying (San Juan)",
-   "ok": false,
-   "n": null,
-   "detalle": "el sitio no devolvió posts (puede estar bloqueando)"
-  },
-  {
-   "nombre": "Secret Flying",
-   "ok": false,
-   "n": null,
-   "detalle": "el sitio no devolvió posts (puede estar bloqueando)"
   },
   {
    "nombre": "The Flight Deal",
@@ -47,18 +35,6 @@
    "ok": true,
    "n": 0,
    "detalle": "50 posts revisados"
-  },
-  {
-   "nombre": "r/flightdeals",
-   "ok": true,
-   "n": 0,
-   "detalle": "25 posts revisados"
-  },
-  {
-   "nombre": "Google Flights",
-   "ok": true,
-   "n": 33,
-   "detalle": "33 búsquedas"
   }
  ]
 }
