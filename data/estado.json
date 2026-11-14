@@ -1,27 +1,27 @@
 {
- "ultima_corrida": "2026-11-13T22:21:46+00:00",
- "segundos": 110,
- "tarifas": 3269,
- "ofertas": 31,
- "personas": 13,
+ "ultima_corrida": "2026-11-14T06:46:01+00:00",
+ "segundos": 108,
+ "tarifas": 3238,
+ "ofertas": 29,
+ "personas": 14,
  "suscriptores": {
   "modo": "supabase",
   "clave": "secreta (sb_secret)",
-  "filas": 13,
+  "filas": 14,
   "de_baja": 0,
   "sin_destinos": 0,
   "sin_email": 0,
-  "personas": 13
+  "personas": 14
  },
  "emails": {
-  "pendientes": 0,
-  "enviados": 0
+  "pendientes": 8,
+  "enviados": 8
  },
  "fuentes": [
   {
    "nombre": "Aviasales",
    "ok": true,
-   "n": 3259,
+   "n": 3228,
    "detalle": ""
   },
   {
