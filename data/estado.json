@@ -1,8 +1,8 @@
 {
- "ultima_corrida": "2026-11-20T07:31:47+00:00",
- "segundos": 106,
- "tarifas": 3081,
- "ofertas": 29,
+ "ultima_corrida": "2026-11-20T17:03:08+00:00",
+ "segundos": 95,
+ "tarifas": 3107,
+ "ofertas": 30,
  "personas": 14,
  "suscriptores": {
   "modo": "supabase",
@@ -14,21 +14,21 @@
   "personas": 14
  },
  "emails": {
-  "pendientes": 6,
-  "enviados": 6
+  "pendientes": 0,
+  "enviados": 0
  },
  "fuentes": [
   {
    "nombre": "Aviasales",
    "ok": true,
-   "n": 3089,
+   "n": 3101,
    "detalle": ""
   },
   {
    "nombre": "The Flight Deal",
-   "ok": false,
-   "n": null,
-   "detalle": "403 Client Error: Forbidden for url: https://www.theflightdeal.com/feed/"
+   "ok": true,
+   "n": 0,
+   "detalle": "16 posts revisados"
   },
   {
    "nombre": "Fly4free",
