@@ -10,7 +10,7 @@ saliendo de **San Juan (SJU)** hacia esos lugares.
 2. **Escoger destinos:** ciudades (Tokio, Madrid...), países (Japón...), regiones (Europa, Hawaii...),
    "cualquier error de tarifa", o **"No tengo destino fijo"** (lo más barato a cualquier lugar desde SJU).
    Al guardar ve la pantalla de **¡Listo!**
-3. **Cada 4 horas** GitHub corre el buscador:
+3. **Cada hora** GitHub corre el buscador (gratis: los repos públicos no pagan GitHub Actions):
    - **Aviasales (Travelpayouts):** lo más barato desde SJU a todos lados + cada destino que la gente escogió.
    - **The Flight Deal y Fly4free:** ofertas y errores de tarifa publicados (sus feeds RSS).
    - Todo es por vías permitidas: la API oficial de Aviasales y feeds que los sitios publican.
@@ -109,7 +109,7 @@ bash buscar.sh --sin-email  # sin mandar emails
 bash buscar.sh --probar-email
 ```
 
-Ojo: si GitHub ya está corriendo cada 4 horas, no lo corras también en la Mac con emails,
+Ojo: si GitHub ya está corriendo cada hora, no lo corras también en la Mac con emails,
 o le pueden llegar repetidos a la gente. Usa `--sin-email` para probar.
 
 ## Ajustar
@@ -124,7 +124,7 @@ cuántos emails/ofertas, fuentes.
 - Los combinados son boletos separados: si el primer vuelo se atrasa, la otra aerolínea no responde.
   Llega un día antes.
 - Gmail deja mandar ~500 emails al día; sobra para familia y amigos.
-- Supabase pausa proyectos gratis después de 7 días sin uso; como el buscador lo usa cada 4 horas, no pasa.
+- Supabase pausa proyectos gratis después de 7 días sin uso; como el buscador lo usa cada hora, no pasa.
 - Google Flights, Secret Flying y Reddit no se usan: no permiten buscar con programas.
 
 ## Archivos
@@ -138,5 +138,5 @@ vuelos/                    el código: fuentes, detector, combinados, emails, p�
 vuelos/app.html            la página (login, destinos, ¡Listo!, ofertas)
 docs/                      lo que publica GitHub Pages (se genera solo)
 data/                      historial de precios (se guarda solo)
-.github/workflows/         la tarea que corre cada 4 horas
+.github/workflows/         la tarea que corre cada hora
 ```

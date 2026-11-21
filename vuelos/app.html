@@ -690,7 +690,7 @@ function avisosTop(){
 const NUBE = '<path d="M38 72C16 72 8 60 12 50C15 40 26 36 36 38C40 20 58 12 74 18C84 4 108 2 120 16C134 8 156 14 160 32C178 30 192 42 190 56C188 68 176 72 166 72Z"/>';
 const NUBES = `<div class="nubes" aria-hidden="true">${[1, 2, 3, 4, 5].map(n => `<svg class="nube n${n}" viewBox="0 0 200 80">${NUBE}</svg>`).join("")}</div>`;
 function hero({ titulo = "", sub = "", menu = false, alto = true, extra = "", ceja = "", nubes = false } = {}){
-  return `<div class="franja"><div class="wrap"><span class="lado">SJU · BQN &rarr; a donde sea</span><span>Buscamos vuelos cada 4 horas<span class="lado"> desde Puerto Rico</span></span><span class="lado">Actualizado ${esc(hace(D.generado))}</span></div></div>
+  return `<div class="franja"><div class="wrap"><span class="lado">SJU · BQN &rarr; a donde sea</span><span>Buscamos vuelos cada hora<span class="lado"> desde Puerto Rico</span></span><span class="lado">Actualizado ${esc(hace(D.generado))}</span></div></div>
   <header class="hero">
     ${nubes ? NUBES : ""}
     <svg class="hero-ruta" viewBox="0 0 300 110" aria-hidden="true"><path d="M10 100 C 90 20, 200 10, 290 30"/><g class="av"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5z" transform="translate(272 18) rotate(70 12 12) scale(.9)"/></g></svg>
@@ -732,7 +732,7 @@ function pantallaEntrar(paso = "email", msg = ""){
       </form>
       <ul class="puntos">
         <li><i>1</i><span><b>Escoge tus destinos.</b> Japón, Madrid, Hawaii... o "cualquier error de tarifa".</span></li>
-        <li><i>2</i><span><b>Buscamos cada 4 horas</b> en Aviasales y en sitios de ofertas y errores de tarifa.</span></li>
+        <li><i>2</i><span><b>Buscamos cada hora</b> en Aviasales y en sitios de ofertas y errores de tarifa.</span></li>
         <li><i>3</i><span><b>Te escribimos solo cuando sale algo bueno.</b> Te puedes dar de baja cuando quieras.</span></li>
       </ul>
     </div></section>`;
@@ -959,7 +959,7 @@ function pantallaListo(){
     <div class="chips">${E.sel.map((d, i) => `<span class="chip" style="animation-delay:${300 + i * 60}ms">${esc(nombreDestino(d))}</span>`).join("")}</div>
     ${E.fechas ? `<p style="margin-top:14px">Solo para estas fechas:</p><div class="f-resumen">${ICON.cal}<span>${esc(textoFechas(E.fechas))}</span></div>` : ""}
     <div class="caja">
-      Buscamos cada 4 horas y solo te escribimos cuando sale algo bueno. Los emails llegan de <b>${esc(CFG.remitente || "Yasui Flights")}</b>; si el primero cae en spam, márcalo como "No es spam".
+      Buscamos cada hora y solo te escribimos cuando sale algo bueno. Los emails llegan de <b>${esc(CFG.remitente || "Yasui Flights")}</b>; si el primero cae en spam, márcalo como "No es spam".
     </div>
     <div class="acciones-listo">
       <button class="btn pri" onclick="pantallaOfertas()">Ver ofertas de ahora</button>

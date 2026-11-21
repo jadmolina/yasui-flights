@@ -307,7 +307,7 @@ def email_ofertas(ofertas: List[dict], persona: Optional[dict] = None, url_sitio
 def email_bienvenida(persona: dict, ofertas: List[dict], precios: List[dict], url_sitio: str = "") -> Dict[str, str]:
     lugares = _lista_bonita(nombres_destinos(persona.get("destinos")))
     intro = (f"<tr><td style='padding:16px 16px 6px;font-size:14px;color:{TINTA};line-height:1.5'>"
-             f"{e(_hola(persona))} Ya te apuntaste en Yasui Flights. Buscamos vuelos cada 4 horas y te escribimos "
+             f"{e(_hola(persona))} Ya te apuntaste en Yasui Flights. Buscamos vuelos cada hora y te escribimos "
              f"solo cuando sale algo bueno para: <b>{e(lugares)}</b>"
              + (f", y solo en tus fechas: <b>{e(texto_fechas(persona.get('destinos')))}</b>" if texto_fechas(persona.get("destinos")) else "")
              + ".</td></tr>")

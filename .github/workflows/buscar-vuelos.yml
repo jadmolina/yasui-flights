@@ -2,7 +2,7 @@ name: Yasui Flights
 
 on:
   schedule:
-    - cron: "23 */4 * * *"   # cada 4 horas (hora UTC)
+    - cron: "23 * * * *"     # cada hora, a los :23 (fuera del inicio de la hora, cuando GitHub está más cargado)
   workflow_dispatch:          # botón "Run workflow" para correrlo a mano
 
 permissions:
